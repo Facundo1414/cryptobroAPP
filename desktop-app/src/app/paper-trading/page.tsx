@@ -2,6 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/stores/auth-store';
+import DashboardLayout from '@/components/layout/dashboard-layout';
+import { toast } from 'sonner';
+import { 
+  Wallet, 
+  TrendingUp, 
+  TrendingDown, 
+  Plus, 
+  RefreshCw,
+  X,
+  Target,
+  AlertTriangle
+} from 'lucide-react';
 
 interface Trade {
   id: string;
@@ -128,9 +140,13 @@ export default function PaperTradingPage() {
 
       if (res.ok) {
         fetchPortfolioData();
+        toast.success('Portafolio creado con $10,000');
+      } else {
+        toast.error('Error al crear el portafolio');
       }
     } catch (error) {
       console.error('Error creating portfolio:', error);
+      toast.error('Error de conexión');
     }
   };
 
@@ -160,12 +176,14 @@ export default function PaperTradingPage() {
           takeProfit: '',
         });
         fetchPortfolioData();
+        toast.success('Operación abierta exitosamente');
       } else {
         const error = await res.json();
-        alert(error.message || 'Error opening trade');
+        toast.error(error.message || 'Error al abrir la operación');
       }
     } catch (error) {
       console.error('Error opening trade:', error);
+      toast.error('Error de conexión al abrir operación');
     }
   };
 
@@ -182,9 +200,13 @@ export default function PaperTradingPage() {
 
       if (res.ok) {
         fetchPortfolioData();
+        toast.success('Operación cerrada');
+      } else {
+        toast.error('Error al cerrar la operación');
       }
     } catch (error) {
       console.error('Error closing trade:', error);
+      toast.error('Error de conexión');
     }
   };
 
@@ -204,41 +226,51 @@ export default function PaperTradingPage() {
 
       if (res.ok) {
         fetchPortfolioData();
+        toast.success('Portafolio reiniciado');
+      } else {
+        toast.error('Error al reiniciar el portafolio');
       }
     } catch (error) {
       console.error('Error resetting portfolio:', error);
+      toast.error('Error de conexión');
     }
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-      </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (!portfolio) {
     return (
-      <div className="p-6">
-        <div className="text-center py-12 bg-gray-800/50 rounded-lg border border-gray-700">
-          <h2 className="text-2xl font-bold text-white mb-4">Paper Trading</h2>
-          <p className="text-gray-400 mb-6">
-            Practica trading con dinero virtual. Sin riesgos, con precios reales.
-          </p>
-          <button
-            onClick={createPortfolio}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-          >
-            Crear Portafolio ($10,000)
-          </button>
+      <DashboardLayout>
+        <div className="p-6">
+          <div className="text-center py-12 bg-gray-800/50 rounded-lg border border-gray-700">
+            <Wallet className="w-16 h-16 mx-auto text-blue-500 mb-4" />
+            <h2 className="text-2xl font-bold text-white mb-4">Paper Trading</h2>
+            <p className="text-gray-400 mb-6">
+              Practica trading con dinero virtual. Sin riesgos, con precios reales.
+            </p>
+            <button
+              onClick={createPortfolio}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+            >
+              Crear Portafolio ($10,000)
+            </button>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <DashboardLayout>
+      <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-white">Paper Trading</h1>
@@ -577,6 +609,7 @@ export default function PaperTradingPage() {
         </div>
       )}
     </div>
+    </DashboardLayout>
   );
 }
 

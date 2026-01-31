@@ -35,6 +35,7 @@ interface NotificationCenterProps {
   onClear: (id: string) => void;
   onClearAll: () => void;
   onNotificationClick?: (notification: Notification) => void;
+  variant?: 'default' | 'dashboard';
 }
 
 export function NotificationCenter({
@@ -44,6 +45,7 @@ export function NotificationCenter({
   onClear,
   onClearAll,
   onNotificationClick,
+  variant = 'default',
 }: NotificationCenterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | Notification['type']>('all');
@@ -87,12 +89,17 @@ export function NotificationCenter({
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+        className={variant === 'dashboard' 
+          ? "relative flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700/50 bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors"
+          : "relative p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+        }
       >
-        <Bell className="w-5 h-5 text-gray-400" />
+        <Bell className={variant === 'dashboard' ? "h-4 w-4" : "w-5 h-5 text-gray-400"} />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs 
-                           rounded-full flex items-center justify-center font-medium">
+          <span className={variant === 'dashboard'
+            ? "absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white"
+            : "absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium"
+          }>
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}

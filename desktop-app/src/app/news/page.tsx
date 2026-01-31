@@ -51,7 +51,7 @@ export default function NewsPage() {
       const response = await newsApi.getAll({ limit: 50 }) as any;
       setNews(response.data || []);
     } catch (error) {
-      toast.error('Failed to load news');
+      toast.error('Error al cargar las noticias');
     } finally {
       setIsLoading(false);
     }
@@ -135,10 +135,10 @@ export default function NewsPage() {
               <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center">
                 <Newspaper className="w-6 h-6 text-indigo-400" />
               </div>
-              Crypto News
+              Noticias Crypto
             </h1>
             <p className="text-gray-400 mt-2">
-              Stay updated with the latest cryptocurrency news and sentiment
+              Mantente actualizado con las últimas noticias y sentimiento del mercado
             </p>
           </div>
           <button
@@ -148,18 +148,18 @@ export default function NewsPage() {
                        rounded-lg text-white font-medium transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
+            Actualizar
           </button>
         </div>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 rounded-xl bg-gray-800 border border-gray-700/50">
-            <p className="text-sm text-gray-400 mb-1">Total Articles</p>
+            <p className="text-sm text-gray-400 mb-1">Total Artículos</p>
             <p className="text-2xl font-bold text-white">{news.length}</p>
           </div>
           <div className="p-4 rounded-xl bg-gray-800 border border-green-500/30">
-            <p className="text-sm text-gray-400 mb-1">Positive</p>
+            <p className="text-sm text-gray-400 mb-1">Positivo</p>
             <p className="text-2xl font-bold text-green-400">
               {news.filter(n => n.sentiment === 'positive').length}
             </p>
@@ -171,7 +171,7 @@ export default function NewsPage() {
             </p>
           </div>
           <div className="p-4 rounded-xl bg-gray-800 border border-red-500/30">
-            <p className="text-sm text-gray-400 mb-1">Negative</p>
+            <p className="text-sm text-gray-400 mb-1">Negativo</p>
             <p className="text-2xl font-bold text-red-400">
               {news.filter(n => n.sentiment === 'negative').length}
             </p>
@@ -181,9 +181,9 @@ export default function NewsPage() {
         {/* Tabs */}
         <Tabs
           tabs={[
-            { id: 'all', label: 'All News', count: filteredNews.length },
-            { id: 'positive', label: 'Bullish', count: news.filter(n => n.sentiment === 'positive').length },
-            { id: 'negative', label: 'Bearish', count: news.filter(n => n.sentiment === 'negative').length },
+            { id: 'all', label: 'Todas las Noticias', count: filteredNews.length },
+            { id: 'positive', label: 'Alcista', count: news.filter(n => n.sentiment === 'positive').length },
+            { id: 'negative', label: 'Bajista', count: news.filter(n => n.sentiment === 'negative').length },
           ]}
           activeTab={selectedSentiment}
           onChange={setSelectedSentiment}
@@ -197,7 +197,7 @@ export default function NewsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <input
                 type="text"
-                placeholder="Search news..."
+                placeholder="Buscar noticias..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-gray-700/50 border border-gray-600 rounded-lg pl-10 pr-4 py-2
@@ -216,7 +216,7 @@ export default function NewsPage() {
                            text-white focus:outline-none focus:ring-2 focus:ring-indigo-500
                            appearance-none cursor-pointer min-w-[180px]"
               >
-                <option value="all">All Cryptocurrencies</option>
+                <option value="all">Todas las Criptos</option>
                 {cryptoOptions.slice(1).map((crypto) => (
                   <option key={crypto} value={crypto}>
                     {crypto.replace('USDT', '')}
@@ -238,8 +238,8 @@ export default function NewsPage() {
           <div className="bg-gray-800 rounded-xl border border-gray-700/50 p-12">
             <EmptyState
               icon={<Newspaper className="w-8 h-8" />}
-              title="No news articles found"
-              description={searchQuery ? 'Try adjusting your search or filters' : 'Check back later for updates'}
+              title="No se encontraron noticias"
+              description={searchQuery ? 'Intenta ajustar tu búsqueda o filtros' : 'Vuelve más tarde para actualizaciones'}
               action={
                 searchQuery ? (
                   <button
@@ -251,7 +251,7 @@ export default function NewsPage() {
                     className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white 
                                rounded-lg text-sm font-medium transition-colors"
                   >
-                    Clear Filters
+                    Limpiar Filtros
                   </button>
                 ) : undefined
               }

@@ -8,6 +8,7 @@ import { AlertsWidget } from '@/components/dashboard/alerts-widget';
 import { MarketStats } from '@/components/dashboard/market-stats';
 import { WatchlistWidget } from '@/components/watchlist/watchlist-widget';
 import { RiskWidget } from '@/components/dashboard/risk-widget';
+import { OnboardingModal, useOnboarding } from '@/components/onboarding';
 import { TrendingUp, TrendingDown, DollarSign, Activity, ArrowUpRight, ArrowDownRight, Shield } from 'lucide-react';
 
 // Quick stats component
@@ -48,8 +49,16 @@ function QuickStat({ title, value, change, icon: Icon, trend }: {
 }
 
 export default function DashboardPage() {
+  const { showOnboarding, completeOnboarding } = useOnboarding();
+
   return (
     <DashboardLayout>
+      {/* Tutorial/Onboarding Modal */}
+      <OnboardingModal 
+        isOpen={showOnboarding} 
+        onComplete={completeOnboarding} 
+      />
+
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between">

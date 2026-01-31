@@ -27,12 +27,12 @@ export default function RegisterPage() {
 
     // Validación
     if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error('Las contraseñas no coinciden');
       return;
     }
 
     if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
@@ -40,10 +40,10 @@ export default function RegisterPage() {
 
     try {
       await register(formData.email, formData.password, formData.name);
-      toast.success('Account created successfully!');
+      toast.success('¡Cuenta creada exitosamente!');
       router.push('/dashboard');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Registration failed');
+      toast.error(error.response?.data?.message || 'Error al crear la cuenta');
     } finally {
       setIsLoading(false);
     }
@@ -56,19 +56,19 @@ export default function RegisterPage() {
           <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-purple-500/10">
             <TrendingUp className="h-8 w-8 text-purple-500" />
           </div>
-          <h1 className="text-3xl font-bold text-white">Create Account</h1>
+          <h1 className="text-3xl font-bold text-white">Crear Cuenta</h1>
           <p className="mt-2 text-gray-400">
-            Start analyzing crypto markets with AI
+            Comienza a analizar mercados crypto con IA
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="name">Nombre Completo</Label>
             <Input
               id="name"
               type="text"
-              placeholder="John Doe"
+              placeholder="Tu nombre"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -77,11 +77,11 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">Correo Electrónico</Label>
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="tu@email.com"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
@@ -90,7 +90,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Contraseña</Label>
             <Input
               id="password"
               type="password"
@@ -104,7 +104,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -125,17 +125,17 @@ export default function RegisterPage() {
             disabled={isLoading}
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create Account
+            Crear Cuenta
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-400">
-          Already have an account?{' '}
+          ¿Ya tienes una cuenta?{' '}
           <Link
             href="/login"
             className="font-medium text-purple-500 hover:text-purple-400"
           >
-            Sign in
+            Iniciar Sesión
           </Link>
         </p>
       </Card>

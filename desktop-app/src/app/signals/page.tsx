@@ -67,7 +67,7 @@ export default function SignalsPage() {
       setSignals(signalsData);
     } catch (error) {
       console.error('Failed to load signals:', error);
-      toast.error('Failed to load signals');
+      toast.error('Error al cargar las señales');
       // Use mock data
       setSignals(generateMockSignals());
     } finally {
@@ -194,10 +194,10 @@ export default function SignalsPage() {
               <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
                 <Zap className="w-6 h-6 text-blue-400" />
               </div>
-              Trading Signals
+              Señales de Trading
             </h1>
             <p className="text-gray-400">
-              View and analyze all generated trading signals
+              Visualiza y analiza todas las señales de trading generadas
             </p>
           </div>
           <button 
@@ -207,16 +207,16 @@ export default function SignalsPage() {
                        rounded-lg text-white font-medium transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
+            Actualizar
           </button>
         </div>
 
         {/* Tabs */}
         <Tabs
           tabs={[
-            { id: 'all', label: 'All Signals', count: signals.length },
-            { id: 'buy', label: 'Buy', count: signals.filter(s => s.type === 'BUY').length },
-            { id: 'sell', label: 'Sell', count: signals.filter(s => s.type === 'SELL').length },
+            { id: 'all', label: 'Todas las Señales', count: signals.length },
+            { id: 'buy', label: 'Compra', count: signals.filter(s => s.type === 'BUY').length },
+            { id: 'sell', label: 'Venta', count: signals.filter(s => s.type === 'SELL').length },
           ]}
           activeTab={activeTab}
           onChange={(tab) => {
@@ -246,7 +246,7 @@ export default function SignalsPage() {
                 <div className="p-2 bg-blue-500/20 rounded-lg">
                   <Zap className="w-4 h-4 text-blue-400" />
                 </div>
-                <span className="text-sm text-gray-400">Total Signals</span>
+                <span className="text-sm text-gray-400">Total Señales</span>
               </div>
               <div className="text-2xl font-bold text-white">
                 {filteredSignals.length}
@@ -257,7 +257,7 @@ export default function SignalsPage() {
                 <div className="p-2 bg-green-500/20 rounded-lg">
                   <TrendingUp className="w-4 h-4 text-green-400" />
                 </div>
-                <span className="text-sm text-gray-400">Buy Signals</span>
+                <span className="text-sm text-gray-400">Señales Compra</span>
               </div>
               <div className="text-2xl font-bold text-green-400">
                 {filteredSignals.filter((s) => s.type === 'BUY').length}
@@ -268,7 +268,7 @@ export default function SignalsPage() {
                 <div className="p-2 bg-red-500/20 rounded-lg">
                   <TrendingDown className="w-4 h-4 text-red-400" />
                 </div>
-                <span className="text-sm text-gray-400">Sell Signals</span>
+                <span className="text-sm text-gray-400">Señales Venta</span>
               </div>
               <div className="text-2xl font-bold text-red-400">
                 {filteredSignals.filter((s) => s.type === 'SELL').length}
@@ -279,7 +279,7 @@ export default function SignalsPage() {
                 <div className="p-2 bg-purple-500/20 rounded-lg">
                   <Target className="w-4 h-4 text-purple-400" />
                 </div>
-                <span className="text-sm text-gray-400">Avg Confidence</span>
+                <span className="text-sm text-gray-400">Confianza Prom.</span>
               </div>
               <div className="text-2xl font-bold text-purple-400">
                 {filteredSignals.length > 0
@@ -303,15 +303,15 @@ export default function SignalsPage() {
         ) : filteredSignals.length === 0 ? (
           <EmptyState
             icon={<Zap className="w-8 h-8" />}
-            title="No signals found"
-            description="Try adjusting your filters or wait for new signals to be generated"
+            title="No se encontraron señales"
+            description="Intenta ajustar los filtros o espera a que se generen nuevas señales"
             action={
               <button
                 onClick={handleResetFilters}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white 
                            font-medium transition-colors"
               >
-                Reset Filters
+                Limpiar Filtros
               </button>
             }
           />

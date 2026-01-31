@@ -25,6 +25,13 @@ import {
   Tabs
 } from '@/components';
 
+// Top cryptos to show if database is empty
+const TOP_CRYPTOS = [
+  'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT',
+  'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT', 'DOTUSDT', 'MATICUSDT',
+  'LINKUSDT', 'LTCUSDT', 'ATOMUSDT', 'UNIUSDT', 'NEARUSDT'
+];
+
 type SortField = 'symbol' | 'price' | 'change24h' | 'volume' | 'marketCap';
 type SortOrder = 'asc' | 'desc';
 
@@ -47,11 +54,74 @@ export default function MarketsPage() {
   }, [cryptos, searchQuery, sortField, sortOrder]);
 
   const loadCryptos = async () => {
+    setIsLoading(true);
     try {
+      // First try to get from backend
       const response = await cryptoApi.getAll() as any;
-      setCryptos(response.data || []);
+      let data = response.data || [];
+      
+      // If backend has no data, fetch directly from Binance
+      if (data.length === 0) {
+        const binanceResponse = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+        const allTickers = await binanceResponse.json();
+        
+        // Filter only top cryptos vs USDT
+        data = allTickers
+          .filter((t: any) => TOP_CRYPTOS.includes(t.symbol))
+          .map((t: any) => ({
+            symbol: t.symbol,
+            name: t.symbol.replace('USDT', ''),
+            price: t.lastPrice,
+            priceChangePercent: t.priceChangePercent,
+            volume: t.volume,
+            marketCap: parseFloat(t.lastPrice) * parseFloat(t.volume),
+          }));
+      } else {
+        // Enrich backend data with Binance prices
+        const symbols = data.map((c: any) => c.binanceSymbol || c.symbol + 'USDT');
+        const binanceResponse = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+        const allTickers = await binanceResponse.json();
+        
+        const tickerMap = new Map(allTickers.map((t: any) => [t.symbol, t]));
+        
+        data = data.map((crypto: any) => {
+          const binanceSymbol = crypto.binanceSymbol || crypto.symbol + 'USDT';
+          const ticker = tickerMap.get(binanceSymbol) as any;
+          return {
+            ...crypto,
+            price: ticker?.lastPrice || 0,
+            priceChangePercent: ticker?.priceChangePercent || 0,
+            volume: ticker?.volume || 0,
+            marketCap: ticker ? parseFloat(ticker.lastPrice) * parseFloat(ticker.volume) : 0,
+          };
+        });
+      }
+      
+      setCryptos(data);
     } catch (error) {
-      toast.error('Failed to load cryptocurrencies');
+      console.error('Error loading cryptos:', error);
+      toast.error('Error al cargar las criptomonedas');
+      
+      // Fallback: try Binance directly
+      try {
+        const binanceResponse = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+        const allTickers = await binanceResponse.json();
+        
+        const data = allTickers
+          .filter((t: any) => TOP_CRYPTOS.includes(t.symbol))
+          .map((t: any) => ({
+            symbol: t.symbol,
+            name: t.symbol.replace('USDT', ''),
+            price: t.lastPrice,
+            priceChangePercent: t.priceChangePercent,
+            volume: t.volume,
+            marketCap: parseFloat(t.lastPrice) * parseFloat(t.volume),
+          }));
+        
+        setCryptos(data);
+      } catch (e) {
+        console.error('Binance fallback failed:', e);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -160,10 +230,10 @@ export default function MarketsPage() {
               <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
                 <LineChart className="w-6 h-6 text-purple-400" />
               </div>
-              Markets
+              Mercados
             </h1>
             <p className="text-gray-400 mt-2">
-              Track all cryptocurrencies in real-time
+              Rastrea todas las criptomonedas en tiempo real
             </p>
           </div>
           <button
@@ -173,30 +243,30 @@ export default function MarketsPage() {
                        rounded-lg text-white font-medium transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
+            Actualizar
           </button>
         </div>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 rounded-xl bg-gray-800 border border-gray-700/50">
-            <p className="text-sm text-gray-400 mb-1">Total Markets</p>
+            <p className="text-sm text-gray-400 mb-1">Total Mercados</p>
             <p className="text-2xl font-bold text-white">{cryptos.length}</p>
           </div>
           <div className="p-4 rounded-xl bg-gray-800 border border-green-500/30">
-            <p className="text-sm text-gray-400 mb-1">Gainers</p>
+            <p className="text-sm text-gray-400 mb-1">En Alza</p>
             <p className="text-2xl font-bold text-green-400">
               {cryptos.filter(c => parseFloat(c.priceChangePercent || 0) > 0).length}
             </p>
           </div>
           <div className="p-4 rounded-xl bg-gray-800 border border-red-500/30">
-            <p className="text-sm text-gray-400 mb-1">Losers</p>
+            <p className="text-sm text-gray-400 mb-1">En Baja</p>
             <p className="text-2xl font-bold text-red-400">
               {cryptos.filter(c => parseFloat(c.priceChangePercent || 0) < 0).length}
             </p>
           </div>
           <div className="p-4 rounded-xl bg-gray-800 border border-gray-700/50">
-            <p className="text-sm text-gray-400 mb-1">Total Volume</p>
+            <p className="text-sm text-gray-400 mb-1">Volumen Total</p>
             <p className="text-2xl font-bold text-white">
               {formatCurrency(cryptos.reduce((sum, c) => sum + parseFloat(c.volume || 0), 0))}
             </p>
@@ -206,9 +276,9 @@ export default function MarketsPage() {
         {/* Tabs */}
         <Tabs
           tabs={[
-            { id: 'all', label: 'All Markets', count: filteredCryptos.length },
-            { id: 'gainers', label: 'Top Gainers', count: cryptos.filter(c => parseFloat(c.priceChangePercent || 0) > 0).length },
-            { id: 'losers', label: 'Top Losers', count: cryptos.filter(c => parseFloat(c.priceChangePercent || 0) < 0).length },
+            { id: 'all', label: 'Todos los Mercados', count: filteredCryptos.length },
+            { id: 'gainers', label: 'Mayor Alza', count: cryptos.filter(c => parseFloat(c.priceChangePercent || 0) > 0).length },
+            { id: 'losers', label: 'Mayor Baja', count: cryptos.filter(c => parseFloat(c.priceChangePercent || 0) < 0).length },
           ]}
           activeTab={activeTab}
           onChange={setActiveTab}
@@ -222,7 +292,7 @@ export default function MarketsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <input
                 type="text"
-                placeholder="Search by symbol or name..."
+                placeholder="Buscar por símbolo o nombre..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-gray-700/50 border border-gray-600 rounded-lg pl-10 pr-4 py-2
@@ -243,22 +313,22 @@ export default function MarketsPage() {
                       <Star className="w-4 h-4" />
                     </th>
                     <th className="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase">
-                      <SortButton field="symbol" label="Asset" />
+                      <SortButton field="symbol" label="Activo" />
                     </th>
                     <th className="text-right py-3 px-4 text-xs font-medium text-gray-400 uppercase">
-                      <SortButton field="price" label="Price" />
+                      <SortButton field="price" label="Precio" />
                     </th>
                     <th className="text-right py-3 px-4 text-xs font-medium text-gray-400 uppercase">
                       <SortButton field="change24h" label="24h %" />
                     </th>
                     <th className="text-right py-3 px-4 text-xs font-medium text-gray-400 uppercase">
-                      <SortButton field="volume" label="Volume" />
+                      <SortButton field="volume" label="Volumen" />
                     </th>
                     <th className="text-right py-3 px-4 text-xs font-medium text-gray-400 uppercase">
-                      <SortButton field="marketCap" label="Market Cap" />
+                      <SortButton field="marketCap" label="Cap. Mercado" />
                     </th>
                     <th className="text-center py-3 px-4 text-xs font-medium text-gray-400 uppercase">
-                      Action
+                      Acción
                     </th>
                   </tr>
                 </thead>
@@ -268,8 +338,8 @@ export default function MarketsPage() {
                       <td colSpan={7} className="py-12">
                         <EmptyState
                           icon={<LineChart className="w-8 h-8" />}
-                          title="No cryptocurrencies found"
-                          description={searchQuery ? 'Try a different search term' : 'No data available'}
+                          title="No se encontraron criptomonedas"
+                          description={searchQuery ? 'Intenta con otro término de búsqueda' : 'No hay datos disponibles'}
                         />
                       </td>
                     </tr>
@@ -323,7 +393,7 @@ export default function MarketsPage() {
                                          hover:bg-gray-600 rounded-lg text-sm text-gray-300 
                                          hover:text-white transition-colors"
                             >
-                              View
+                              Ver
                               <ExternalLink className="w-3 h-3" />
                             </button>
                           </td>
@@ -338,7 +408,7 @@ export default function MarketsPage() {
 
           {!isLoading && displayedCryptos.length > 0 && (
             <div className="px-4 py-3 border-t border-gray-700/50 text-sm text-gray-500 text-center">
-              Showing {displayedCryptos.length} of {cryptos.length} cryptocurrencies
+              Mostrando {displayedCryptos.length} de {cryptos.length} criptomonedas
             </div>
           )}
         </div>

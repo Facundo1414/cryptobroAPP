@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Calculator, Info, AlertTriangle, DollarSign, Target, Shield } from 'lucide-react';
+import DashboardLayout from '@/components/layout/dashboard-layout';
 
 interface PositionSizeResult {
   positionSize: number;
@@ -69,24 +70,25 @@ export default function PositionSizerPage() {
   const riskLevel = useMemo(() => {
     const risk = parseFloat(riskPercentage);
     if (!risk) return null;
-    if (risk <= 1) return { level: 'LOW', color: 'text-green-400', bg: 'bg-green-500/20' };
-    if (risk <= 2) return { level: 'MODERATE', color: 'text-yellow-400', bg: 'bg-yellow-500/20' };
-    if (risk <= 5) return { level: 'HIGH', color: 'text-orange-400', bg: 'bg-orange-500/20' };
-    return { level: 'VERY HIGH', color: 'text-red-400', bg: 'bg-red-500/20' };
+    if (risk <= 1) return { level: 'BAJO', color: 'text-green-400', bg: 'bg-green-500/20' };
+    if (risk <= 2) return { level: 'MODERADO', color: 'text-yellow-400', bg: 'bg-yellow-500/20' };
+    if (risk <= 5) return { level: 'ALTO', color: 'text-orange-400', bg: 'bg-orange-500/20' };
+    return { level: 'MUY ALTO', color: 'text-red-400', bg: 'bg-red-500/20' };
   }, [riskPercentage]);
 
   // Quick risk presets
   const riskPresets = [0.5, 1, 2, 3, 5];
 
   return (
+    <DashboardLayout>
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <Calculator className="w-8 h-8 text-blue-400" />
           <div>
-            <h1 className="text-2xl font-bold">Position Size Calculator</h1>
-            <p className="text-gray-400 text-sm">Calculate optimal position size based on risk management</p>
+            <h1 className="text-2xl font-bold">Calculadora de Tamaño de Posición</h1>
+            <p className="text-gray-400 text-sm">Calcula el tamaño óptimo basado en tu gestión de riesgo</p>
           </div>
         </div>
 
@@ -95,13 +97,13 @@ export default function PositionSizerPage() {
           <div className="bg-gray-800 rounded-xl p-6">
             <h2 className="font-semibold mb-4 flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-green-400" />
-              Trade Parameters
+              Parámetros de la Operación
             </h2>
 
             <div className="space-y-4">
               {/* Account Balance */}
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Account Balance (USDT)</label>
+                <label className="block text-sm text-gray-400 mb-2">Balance de Cuenta (USDT)</label>
                 <input
                   type="number"
                   value={accountBalance}
@@ -114,7 +116,7 @@ export default function PositionSizerPage() {
               {/* Risk Percentage */}
               <div>
                 <label className="block text-sm text-gray-400 mb-2">
-                  Risk per Trade (%)
+                  Riesgo por Operación (%)
                   {riskLevel && (
                     <span className={`ml-2 px-2 py-0.5 rounded text-xs ${riskLevel.bg} ${riskLevel.color}`}>
                       {riskLevel.level}
@@ -149,7 +151,7 @@ export default function PositionSizerPage() {
 
               {/* Entry Price */}
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Entry Price</label>
+                <label className="block text-sm text-gray-400 mb-2">Precio de Entrada</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -169,7 +171,7 @@ export default function PositionSizerPage() {
                 <label className="block text-sm text-gray-400 mb-2">
                   <span className="flex items-center gap-1">
                     <Shield className="w-4 h-4 text-red-400" />
-                    Stop Loss Price
+                    Precio de Stop Loss
                   </span>
                 </label>
                 <input
@@ -186,7 +188,7 @@ export default function PositionSizerPage() {
                 <label className="block text-sm text-gray-400 mb-2">
                   <span className="flex items-center gap-1">
                     <Target className="w-4 h-4 text-green-400" />
-                    Take Profit Price (Optional)
+                    Precio de Take Profit (Opcional)
                   </span>
                 </label>
                 <input
@@ -200,7 +202,7 @@ export default function PositionSizerPage() {
 
               {/* Leverage */}
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Leverage (1x = Spot)</label>
+                <label className="block text-sm text-gray-400 mb-2">Apalancamiento (1x = Spot)</label>
                 <input
                   type="number"
                   value={leverage}
@@ -219,7 +221,7 @@ export default function PositionSizerPage() {
             <div className="bg-gray-800 rounded-xl p-6">
               <h2 className="font-semibold mb-4 flex items-center gap-2">
                 <Calculator className="w-5 h-5 text-blue-400" />
-                Position Size
+                Tamaño de Posición
               </h2>
 
               {result ? (
@@ -238,14 +240,14 @@ export default function PositionSizerPage() {
                   {/* Metrics grid */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-gray-700/50 rounded-lg p-4">
-                      <div className="text-sm text-gray-400">Risk Amount</div>
+                      <div className="text-sm text-gray-400">Monto en Riesgo</div>
                       <div className="text-xl font-semibold text-red-400">
                         ${result.riskAmount.toLocaleString()}
                       </div>
                     </div>
                     
                     <div className="bg-gray-700/50 rounded-lg p-4">
-                      <div className="text-sm text-gray-400">Stop Loss Distance</div>
+                      <div className="text-sm text-gray-400">Distancia al Stop Loss</div>
                       <div className="text-xl font-semibold">
                         {result.stopLossPercent}%
                       </div>
@@ -253,7 +255,7 @@ export default function PositionSizerPage() {
 
                     {result.riskRewardRatio && (
                       <div className="bg-gray-700/50 rounded-lg p-4">
-                        <div className="text-sm text-gray-400">Risk:Reward Ratio</div>
+                        <div className="text-sm text-gray-400">Ratio Riesgo:Beneficio</div>
                         <div className={`text-xl font-semibold ${
                           result.riskRewardRatio >= 2 ? 'text-green-400' :
                           result.riskRewardRatio >= 1 ? 'text-yellow-400' : 'text-red-400'
@@ -264,7 +266,7 @@ export default function PositionSizerPage() {
                     )}
 
                     <div className="bg-gray-700/50 rounded-lg p-4">
-                      <div className="text-sm text-gray-400">Recommended Leverage</div>
+                      <div className="text-sm text-gray-400">Apalancamiento Recomendado</div>
                       <div className="text-xl font-semibold">
                         {result.recommendedLeverage}x
                       </div>
@@ -275,21 +277,21 @@ export default function PositionSizerPage() {
                   {result.riskRewardRatio && result.riskRewardRatio < 1 && (
                     <div className="flex items-center gap-2 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
                       <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                      <span>Risk:Reward ratio below 1:1 is not recommended</span>
+                      <span>Ratio Riesgo:Beneficio menor a 1:1 no es recomendado</span>
                     </div>
                   )}
 
                   {parseFloat(riskPercentage) > 2 && (
                     <div className="flex items-center gap-2 p-3 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-yellow-400 text-sm">
                       <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                      <span>Risk above 2% per trade is considered aggressive</span>
+                      <span>Riesgo mayor al 2% por operación se considera agresivo</span>
                     </div>
                   )}
                 </div>
               ) : (
                 <div className="text-center py-12 text-gray-500">
                   <Calculator className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>Enter trade parameters to calculate position size</p>
+                  <p>Ingresa los parámetros para calcular el tamaño de posición</p>
                 </div>
               )}
             </div>
@@ -298,61 +300,62 @@ export default function PositionSizerPage() {
             <div className="bg-gray-800 rounded-xl p-6">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
                 <Info className="w-5 h-5 text-blue-400" />
-                Risk Management Tips
+                Consejos de Gestión de Riesgo
               </h3>
               
               <ul className="space-y-2 text-sm text-gray-400">
                 <li className="flex items-start gap-2">
                   <span className="text-green-400">•</span>
-                  <span>Never risk more than 1-2% of your account per trade</span>
+                  <span>Nunca arriesgues más del 1-2% de tu cuenta por operación</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-400">•</span>
-                  <span>Aim for at least 1:2 risk-to-reward ratio</span>
+                  <span>Apunta a un ratio riesgo:beneficio de al menos 1:2</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-400">•</span>
-                  <span>Always set a stop loss before entering a trade</span>
+                  <span>Siempre configura un stop loss antes de entrar</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-400">•</span>
-                  <span>Consider using trailing stops to lock in profits</span>
+                  <span>Considera usar trailing stops para asegurar ganancias</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-yellow-400">•</span>
-                  <span>High leverage increases both profits AND losses</span>
+                  <span>El apalancamiento alto aumenta ganancias Y pérdidas</span>
                 </li>
               </ul>
             </div>
 
             {/* Kelly Criterion */}
             <div className="bg-gray-800 rounded-xl p-6">
-              <h3 className="font-semibold mb-3">Kelly Criterion (Advanced)</h3>
+              <h3 className="font-semibold mb-3">Criterio de Kelly (Avanzado)</h3>
               <p className="text-sm text-gray-400 mb-4">
-                Based on your win rate and average win/loss, the optimal bet size is:
+                Basado en tu tasa de éxito y ratio ganancia/pérdida, el tamaño óptimo es:
               </p>
               
               <div className="grid grid-cols-3 gap-3">
                 <div className="text-center p-3 bg-gray-700/50 rounded-lg">
-                  <div className="text-xs text-gray-400">Full Kelly</div>
+                  <div className="text-xs text-gray-400">Kelly Completo</div>
                   <div className="font-semibold">~15%</div>
                 </div>
                 <div className="text-center p-3 bg-blue-500/20 border border-blue-500/50 rounded-lg">
-                  <div className="text-xs text-gray-400">Half Kelly ✓</div>
+                  <div className="text-xs text-gray-400">Medio Kelly ✓</div>
                   <div className="font-semibold text-blue-400">~7.5%</div>
                 </div>
                 <div className="text-center p-3 bg-gray-700/50 rounded-lg">
-                  <div className="text-xs text-gray-400">Quarter Kelly</div>
+                  <div className="text-xs text-gray-400">Cuarto Kelly</div>
                   <div className="font-semibold">~3.75%</div>
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                * Calculated assuming 55% win rate and 1.5 profit factor
+                * Calculado asumiendo 55% tasa de éxito y 1.5 factor de beneficio
               </p>
             </div>
           </div>
         </div>
       </div>
     </div>
+    </DashboardLayout>
   );
 }

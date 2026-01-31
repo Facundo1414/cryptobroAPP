@@ -1,13 +1,12 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import {
   LayoutDashboard,
   TrendingUp,
-  Bell,
   Settings,
   LogOut,
   LineChart,
@@ -23,7 +22,8 @@ import {
   Wallet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useEffect } from 'react';
+import { NotificationCenter } from '@/components/RealTime';
+import { useMarketDataStore } from '@/stores/market-data-store';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -47,6 +47,100 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuthStore();
   const [collapsed, setCollapsed] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  
+  // Get signals and alerts from the store (populated by WebSocket)
+  const { signals, alerts } = useMarketDataStore();
+  
+  // Notification state
+  const [notifications, setNotifications] = useState<Array<{
+    id: string;
+    type: 'signal' | 'price_alert' | 'news' | 'system' | 'trade';
+    title: string;
+    message: string;
+    timestamp: Date;
+    read: boolean;
+    data?: Record<string, unknown>;
+  }>>([]);
+
+  // Convert signals to notifications
+  useEffect(() => {
+    if (signals && signals.length > 0) {
+      const signalNotifications = signals.slice(0, 10).map((signal) => ({
+        id: `signal-${signal.id}`,
+        type: 'signal' as const,
+        title: `${signal.type === 'BUY' ? '🟢 BUY' : '🔴 SELL'} Signal: ${signal.cryptoSymbol}`,
+        message: `${signal.reason || 'Signal detected'} (${((signal.confidence || 0) * 100).toFixed(0)}% confidence)`,
+        timestamp: new Date(signal.timestamp),
+        read: false,
+        data: signal as unknown as Record<string, unknown>,
+      }));
+      
+      setNotifications((prev) => {
+        const existingIds = new Set(prev.map(n => n.id));
+        const newNotifications = signalNotifications.filter(n => !existingIds.has(n.id));
+        if (newNotifications.length > 0) {
+          return [...newNotifications, ...prev].slice(0, 50);
+        }
+        return prev;
+      });
+    }
+  }, [signals]);
+
+  // Convert alerts to notifications
+  useEffect(() => {
+    if (alerts && alerts.length > 0) {
+      const alertNotifications = alerts.slice(0, 10).map((alert) => ({
+        id: `alert-${alert.id}`,
+        type: 'price_alert' as const,
+        title: `⚠️ Alert: ${alert.cryptoSymbol}`,
+        message: alert.message || `Price alert triggered`,
+        timestamp: new Date(alert.timestamp),
+        read: false,
+        data: alert as unknown as Record<string, unknown>,
+      }));
+      
+      setNotifications((prev) => {
+        const existingIds = new Set(prev.map(n => n.id));
+        const newNotifications = alertNotifications.filter(n => !existingIds.has(n.id));
+        if (newNotifications.length > 0) {
+          return [...newNotifications, ...prev].slice(0, 50);
+        }
+        return prev;
+      });
+    }
+  }, [alerts]);
+
+  // Notification handlers
+  const handleMarkAsRead = useCallback((id: string) => {
+    setNotifications(prev => prev.map(n => 
+      n.id === id ? { ...n, read: true } : n
+    ));
+  }, []);
+
+  const handleMarkAllAsRead = useCallback(() => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  }, []);
+
+  const handleClearNotification = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
+
+  const handleClearAllNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
+  const handleNotificationClick = useCallback((notification: typeof notifications[0]) => {
+    handleMarkAsRead(notification.id);
+    
+    // Navigate based on notification type
+    if (notification.type === 'signal') {
+      router.push('/signals');
+    } else if (notification.type === 'price_alert') {
+      router.push('/markets');
+    } else if (notification.type === 'news') {
+      router.push('/news');
+    }
+  }, [router, handleMarkAsRead]);
 
   useEffect(() => {
     const checkConnection = async () => {
@@ -197,10 +291,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
             
             {/* Notifications */}
-            <button className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700/50 bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors">
-              <Bell className="h-4 w-4" />
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">3</span>
-            </button>
+            <NotificationCenter
+              notifications={notifications}
+              onMarkAsRead={handleMarkAsRead}
+              onMarkAllAsRead={handleMarkAllAsRead}
+              onClear={handleClearNotification}
+              onClearAll={handleClearAllNotifications}
+              onNotificationClick={handleNotificationClick}
+              variant="dashboard"
+            />
           </div>
         </header>
 
