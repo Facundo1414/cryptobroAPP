@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+coverage/
+.nyc_output/
+
+# Prisma
+prisma/migrations/*_migration/
+
+# Build
+*.tsbuildinfo
+
+# Temp
+temp/
+tmp/

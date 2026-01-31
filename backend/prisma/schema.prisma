@@ -1,0 +1,743 @@
+// Prisma schema for Crypto Analyzer Backend
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+// Local authentication with bcrypt password hashing
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String?   @map("password_hash") // bcrypt hash
+  name          String?
+  avatar        String?   @map("avatar_url")
+  role          String    @default("user") // user, admin, premium
+  
+  // Subscription
+  isPremium     Boolean   @default(false) @map("is_premium")
+  premiumUntil  DateTime? @map("premium_until")
+  
+  // Activity tracking
+  lastLogin     DateTime? @map("last_login")
+  
+  // Preferences
+  preferences   Json?     // User settings, theme, notifications, etc.
+  
+  // Relations
+  strategies    Strategy[]
+  alerts        Alert[]
+  backtests     Backtest[]
+  watchlist     WatchlistItem[]
+  signals       Signal[]
+  
+  // Sprint 5-7 relations
+  paperPortfolio    PaperPortfolio?
+  dcaBots           DCABot[]
+  gridBots          GridBot[]
+  telegramUser      TelegramUser?
+  priceAlerts       PriceAlert[]
+  userPreferences   UserPreferences?
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+// ============================================
+// CRYPTOCURRENCIES
+// ============================================
+
+model Cryptocurrency {
+  id                String   @id @default(uuid())
+  symbol            String   @unique // BTC, ETH, etc.
+  name              String
+  coinGeckoId       String?  @map("coingecko_id")
+  binanceSymbol     String   @unique @map("binance_symbol") // BTCUSDT, ETHUSDT
+  
+  // Metadata
+  imageUrl          String?  @map("image_url")
+  marketCapRank     Int?     @map("market_cap_rank")
+  
+  // Flags
+  isActive          Boolean  @default(true) @map("is_active")
+  isPopular         Boolean  @default(false) @map("is_popular")
+  
+  // Relations
+  priceData         PriceData[]
+  signals           Signal[]
+  strategies        Strategy[]
+  alerts            Alert[]
+  backtests         Backtest[]
+  watchlist         WatchlistItem[]
+  
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("cryptocurrencies")
+}
+
+// ============================================
+// PRICE DATA (TimescaleDB optimized)
+// ============================================
+
+model PriceData {
+  id              String         @id @default(uuid())
+  cryptoId        String         @map("crypto_id")
+  crypto          Cryptocurrency @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
+  
+  timestamp       DateTime
+  
+  // OHLCV
+  open            Float
+  high            Float
+  low             Float
+  close           Float
+  volume          Float
+  
+  // Calculated Indicators (cached)
+  rsi             Float?
+  macd            Float?
+  macdSignal      Float?         @map("macd_signal")
+  macdHistogram   Float?         @map("macd_histogram")
+  ema9            Float?         @map("ema_9")
+  ema21           Float?         @map("ema_21")
+  ema55           Float?         @map("ema_55")
+  ema100          Float?         @map("ema_100")
+  ema200          Float?         @map("ema_200")
+  bollingerUpper  Float?         @map("bollinger_upper")
+  bollingerMiddle Float?         @map("bollinger_middle")
+  bollingerLower  Float?         @map("bollinger_lower")
+  
+  // Timeframe
+  timeframe       String         // 1m, 5m, 15m, 1h, 4h, 1d, 1w
+
+  @@unique([cryptoId, timestamp, timeframe])
+  @@index([cryptoId, timeframe, timestamp])
+  @@map("price_data")
+}
+
+// ============================================
+// STRATEGIES
+// ============================================
+
+enum StrategyType {
+  RSI_VOLUME
+  EMA_RIBBON
+  MACD_RSI_CONFLUENCE
+  BOLLINGER_SQUEEZE
+  CUSTOM
+}
+
+enum SignalType {
+  BUY
+  SELL
+  HOLD
+}
+
+model Strategy {
+  id              String        @id @default(uuid())
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name            String
+  description     String?
+  type            StrategyType
+  
+  // Configuration (JSON with strategy-specific params)
+  config          Json          // e.g., { rsiPeriod: 14, rsiOverbought: 70, ... }
+  
+  // Timeframes to run on
+  timeframes      String[]      // ["4h", "1d"]
+  
+  // Cryptos to monitor
+  cryptos         Cryptocurrency[]
+  
+  // Status
+  isActive        Boolean       @default(true) @map("is_active")
+  
+  // Relations
+  signals         Signal[]
+  alerts          Alert[]
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("strategies")
+}
+
+// ============================================
+// SIGNALS (Generated by strategies)
+// ============================================
+
+model Signal {
+  id              String        @id @default(uuid())
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  strategyId      String        @map("strategy_id")
+  strategy        Strategy      @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  
+  cryptoId        String        @map("crypto_id")
+  crypto          Cryptocurrency @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
+  
+  timeframe       String
+  
+  type            SignalType
+  
+  // Signal details
+  price           Float
+  confidence      Float         // 0-100
+  indicators      Json          // Snapshot of indicator values at signal time
+  
+  // Optional stop loss / take profit suggestions
+  suggestedSL     Float?        @map("suggested_sl")
+  suggestedTP     Float?        @map("suggested_tp")
+  
+  timestamp       DateTime      @default(now())
+  
+  // Has this signal triggered an alert?
+  alertSent       Boolean       @default(false) @map("alert_sent")
+  
+  @@index([strategyId, timestamp])
+  @@index([cryptoId, timestamp])
+  @@map("signals")
+}
+
+// ============================================
+// ALERTS / NOTIFICATIONS
+// ============================================
+
+enum AlertStatus {
+  PENDING
+  ACTIVE
+  TRIGGERED
+  CANCELLED
+  SENT
+  FAILED
+  READ
+}
+
+model Alert {
+  id              String        @id @default(uuid())
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  strategyId      String?       @map("strategy_id")
+  strategy        Strategy?     @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+  
+  cryptoId        String?       @map("crypto_id")
+  crypto          Cryptocurrency? @relation(fields: [cryptoId], references: [id], onDelete: SetNull)
+  
+  // Alert details
+  title           String
+  message         String
+  type            SignalType?
+  
+  // Price alert specific fields
+  condition       String?       // ABOVE, BELOW
+  targetPrice     Float?        @map("target_price")
+  
+  // Notification preferences
+  notifyEmail     Boolean       @default(true) @map("notify_email")
+  notifyPush      Boolean       @default(false) @map("notify_push")
+  
+  // Notification
+  status          AlertStatus   @default(PENDING)
+  sentAt          DateTime?     @map("sent_at")
+  readAt          DateTime?     @map("read_at")
+  triggeredAt     DateTime?     @map("triggered_at")
+  
+  // Metadata
+  metadata        Json?         // Additional data (price, indicators, etc.)
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@index([userId, status, createdAt])
+  @@map("alerts")
+}
+
+// ============================================
+// BACKTESTING
+// ============================================
+
+model Backtest {
+  id              String        @id @default(uuid())
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  cryptoId        String        @map("crypto_id")
+  crypto          Cryptocurrency @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
+  
+  // Test parameters
+  name            String
+  strategyConfig  Json          @map("strategy_config")
+  timeframe       String
+  startDate       DateTime      @map("start_date")
+  endDate         DateTime      @map("end_date")
+  initialCapital  Float         @map("initial_capital")
+  
+  // Results
+  totalTrades     Int?          @map("total_trades")
+  winningTrades   Int?          @map("winning_trades")
+  losingTrades    Int?          @map("losing_trades")
+  winRate         Float?        @map("win_rate")
+  profitFactor    Float?        @map("profit_factor")
+  sharpeRatio     Float?        @map("sharpe_ratio")
+  maxDrawdown     Float?        @map("max_drawdown")
+  totalReturn     Float?        @map("total_return")
+  finalCapital    Float?        @map("final_capital")
+  
+  // Detailed results
+  trades          Json?         // Array of all trades executed
+  equityCurve     Json?         @map("equity_curve")
+  
+  // Status
+  status          String        @default("pending") // pending, running, completed, failed
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+  completedAt     DateTime?     @map("completed_at")
+
+  @@index([userId, createdAt])
+  @@map("backtests")
+}
+
+// ============================================
+// WATCHLIST
+// ============================================
+
+model WatchlistItem {
+  id              String         @id @default(uuid())
+  userId          String         @map("user_id")
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  cryptoId        String         @map("crypto_id")
+  crypto          Cryptocurrency @relation(fields: [cryptoId], references: [id], onDelete: Cascade)
+  
+  // Custom notes
+  notes           String?
+  
+  // Alert preferences for this specific crypto
+  alertOnBuy      Boolean        @default(true) @map("alert_on_buy")
+  alertOnSell     Boolean        @default(true) @map("alert_on_sell")
+  
+  addedAt         DateTime       @default(now()) @map("added_at")
+
+  @@unique([userId, cryptoId])
+  @@map("watchlist")
+}
+
+// ============================================
+// NEWS & SENTIMENT
+// ============================================
+
+model NewsArticle {
+  id              String    @id @default(uuid())
+  title           String
+  description     String?
+  url             String    @unique
+  source          String    // CryptoPanic, NewsAPI, etc.
+  
+  // Sentiment analysis
+  sentiment       String?   // positive, neutral, negative
+  sentimentScore  Float?    @map("sentiment_score") // -1 to 1
+  
+  // Related cryptos (array of symbols)
+  relatedCryptos  String[]  @map("related_cryptos")
+  
+  publishedAt     DateTime  @map("published_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([publishedAt])
+  @@index([relatedCryptos])
+  @@map("news_articles")
+}
+
+// ============================================
+// CANDLES (For backtesting)
+// ============================================
+
+model Candle {
+  id              String    @id @default(uuid())
+  symbol          String
+  interval        String    // 1m, 5m, 15m, 1h, 4h, 1d, 1w
+  openTime        DateTime  @map("open_time")
+  
+  // OHLCV
+  open            Float
+  high            Float
+  low             Float
+  close           Float
+  volume          Float
+  
+  closeTime       DateTime  @map("close_time")
+  quoteVolume     Float     @map("quote_volume")
+  trades          Int
+  takerBuyBase    Float     @map("taker_buy_base")
+  takerBuyQuote   Float     @map("taker_buy_quote")
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@unique([symbol, interval, openTime])
+  @@index([symbol, interval, openTime])
+  @@map("candles")
+}
+
+model MarketSentiment {
+  id              String    @id @default(uuid())
+  
+  // Fear & Greed Index
+  fearGreedValue  Int?      @map("fear_greed_value") // 0-100
+  fearGreedLabel  String?   @map("fear_greed_label") // Extreme Fear, Fear, Neutral, Greed, Extreme Greed
+  
+  // Social sentiment
+  twitterSentiment Float?   @map("twitter_sentiment") // -1 to 1
+  redditSentiment  Float?   @map("reddit_sentiment")  // -1 to 1
+  
+  // Aggregated
+  overallSentiment String?  @map("overall_sentiment") // bearish, neutral, bullish
+  
+  timestamp       DateTime  @default(now())
+
+  @@index([timestamp])
+  @@map("market_sentiment")
+}
+
+// ============================================
+// PAPER TRADING - Sprint 5
+// ============================================
+
+model PaperPortfolio {
+  id              String        @id @default(uuid())
+  userId          String        @unique @map("user_id")
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Balance
+  initialBalance  Float         @default(10000) @map("initial_balance")
+  currentBalance  Float         @default(10000) @map("current_balance")
+  
+  // Performance metrics
+  totalPnl        Float         @default(0) @map("total_pnl")
+  totalPnlPercent Float         @default(0) @map("total_pnl_percent")
+  
+  // Trade statistics
+  totalTrades     Int           @default(0) @map("total_trades")
+  winningTrades   Int           @default(0) @map("winning_trades")
+  losingTrades    Int           @default(0) @map("losing_trades")
+  winRate         Float         @default(0) @map("win_rate")
+  
+  // Risk metrics
+  maxDrawdown     Float         @default(0) @map("max_drawdown")
+  peakBalance     Float         @default(10000) @map("peak_balance")
+  
+  // Relations
+  trades          PaperTrade[]
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("paper_portfolios")
+}
+
+model PaperTrade {
+  id              String        @id @default(uuid())
+  portfolioId     String        @map("portfolio_id")
+  portfolio       PaperPortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  
+  // Trade details
+  symbol          String
+  side            String        // BUY, SELL
+  type            String        // MARKET, LIMIT
+  
+  // Order
+  quantity        Float
+  entryPrice      Float         @map("entry_price")
+  currentPrice    Float?        @map("current_price")
+  exitPrice       Float?        @map("exit_price")
+  
+  // Value
+  entryValue      Float         @map("entry_value")  // quantity * entryPrice
+  exitValue       Float?        @map("exit_value")
+  fee             Float         @default(0.001)      // 0.1% simulated fee
+  
+  // P&L
+  pnl             Float?
+  pnlPercent      Float?        @map("pnl_percent")
+  
+  // Risk management
+  stopLoss        Float?        @map("stop_loss")
+  takeProfit      Float?        @map("take_profit")
+  trailingStop    Float?        @map("trailing_stop")
+  trailingPercent Float?        @map("trailing_percent")
+  
+  // Status
+  status          String        @default("OPEN") // OPEN, CLOSED, CANCELLED
+  closeReason     String?       @map("close_reason") // MANUAL, SL, TP, TRAILING
+  
+  // Timestamps
+  openedAt        DateTime      @default(now()) @map("opened_at")
+  closedAt        DateTime?     @map("closed_at")
+  
+  // Notes
+  notes           String?
+  strategyUsed    String?       @map("strategy_used")
+
+  @@index([portfolioId, status])
+  @@index([symbol, openedAt])
+  @@map("paper_trades")
+}
+
+// ============================================
+// DCA BOT - Sprint 6
+// ============================================
+
+model DCABot {
+  id              String        @id @default(uuid())
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name            String
+  symbol          String
+  
+  // DCA Configuration
+  baseOrderSize   Float         @map("base_order_size")      // Initial order amount in quote currency
+  safetyOrderSize Float         @map("safety_order_size")    // Safety order amount
+  maxSafetyOrders Int           @map("max_safety_orders")    // Max number of safety orders
+  priceDeviation  Float         @map("price_deviation")      // % drop for each safety order
+  safetyOrderStep Float         @default(1) @map("safety_order_step") // Multiplier for spacing
+  
+  // Take Profit
+  takeProfitPercent Float       @map("take_profit_percent")
+  
+  // Status
+  isActive        Boolean       @default(false) @map("is_active")
+  currentCycle    Int           @default(0) @map("current_cycle")
+  
+  // Current position
+  totalInvested   Float         @default(0) @map("total_invested")
+  averagePrice    Float?        @map("average_price")
+  currentQuantity Float         @default(0) @map("current_quantity")
+  filledSafetyOrders Int        @default(0) @map("filled_safety_orders")
+  
+  // Stats
+  totalCycles     Int           @default(0) @map("total_cycles")
+  totalProfit     Float         @default(0) @map("total_profit")
+  
+  // Relations
+  orders          DCAOrder[]
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([userId, isActive])
+  @@map("dca_bots")
+}
+
+model DCAOrder {
+  id              String        @id @default(uuid())
+  botId           String        @map("bot_id")
+  bot             DCABot        @relation(fields: [botId], references: [id], onDelete: Cascade)
+  
+  orderNumber     Int           @map("order_number") // 0 = base order, 1+ = safety orders
+  type            String        // BASE, SAFETY, TAKE_PROFIT
+  side            String        // BUY, SELL
+  
+  price           Float
+  quantity        Float
+  value           Float
+  
+  status          String        @default("PENDING") // PENDING, FILLED, CANCELLED
+  filledAt        DateTime?     @map("filled_at")
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@index([botId, status])
+  @@map("dca_orders")
+}
+
+// ============================================
+// GRID BOT - Sprint 6
+// ============================================
+
+model GridBot {
+  id              String        @id @default(uuid())
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name            String
+  symbol          String
+  
+  // Grid Configuration
+  upperPrice      Float         @map("upper_price")
+  lowerPrice      Float         @map("lower_price")
+  gridLevels      Int           @map("grid_levels")
+  gridMode        String        @default("ARITHMETIC") // ARITHMETIC, GEOMETRIC
+  
+  // Investment
+  totalInvestment Float         @map("total_investment")
+  orderSize       Float         @map("order_size") // Amount per grid level
+  
+  // Status
+  isActive        Boolean       @default(false) @map("is_active")
+  
+  // Stats
+  totalProfit     Float         @default(0) @map("total_profit")
+  gridProfit      Float         @default(0) @map("grid_profit")  // Profit from grid trades
+  floatingPnl     Float         @default(0) @map("floating_pnl") // Unrealized P&L
+  totalTrades     Int           @default(0) @map("total_trades")
+  
+  // Relations
+  levels          GridLevel[]
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([userId, isActive])
+  @@map("grid_bots")
+}
+
+model GridLevel {
+  id              String        @id @default(uuid())
+  botId           String        @map("bot_id")
+  bot             GridBot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+  
+  levelNumber     Int           @map("level_number")
+  price           Float
+  
+  // Orders at this level
+  buyOrderStatus  String        @default("PENDING") @map("buy_order_status")   // PENDING, FILLED
+  sellOrderStatus String        @default("PENDING") @map("sell_order_status")  // PENDING, FILLED
+  
+  // Stats
+  buyFills        Int           @default(0) @map("buy_fills")
+  sellFills       Int           @default(0) @map("sell_fills")
+  levelProfit     Float         @default(0) @map("level_profit")
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@unique([botId, levelNumber])
+  @@index([botId])
+  @@map("grid_levels")
+}
+
+// ============================================
+// TELEGRAM BOT - Sprint 7
+// ============================================
+
+model TelegramUser {
+  id              String        @id @default(uuid())
+  chatId          String        @unique @map("chat_id")
+  userId          String?       @unique @map("user_id")
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  username        String?
+  firstName       String?       @map("first_name")
+  
+  // Subscription preferences
+  isSubscribed    Boolean       @default(true) @map("is_subscribed")
+  notifySignals   Boolean       @default(true) @map("notify_signals")
+  notifyPriceAlerts Boolean     @default(true) @map("notify_price_alerts")
+  notifyNews      Boolean       @default(false) @map("notify_news")
+  
+  // Watched symbols for notifications
+  watchedSymbols  String[]      @map("watched_symbols")
+  
+  // Verification
+  verificationCode String?      @map("verification_code")
+  verifiedAt      DateTime?     @map("verified_at")
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("telegram_users")
+}
+
+// ============================================
+// PRICE ALERTS - Enhanced
+// ============================================
+
+model PriceAlert {
+  id              String        @id @default(uuid())
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  symbol          String
+  condition       String        // ABOVE, BELOW, CROSS_UP, CROSS_DOWN
+  targetPrice     Float         @map("target_price")
+  
+  // Notification channels
+  notifyInApp     Boolean       @default(true) @map("notify_in_app")
+  notifyEmail     Boolean       @default(false) @map("notify_email")
+  notifyTelegram  Boolean       @default(false) @map("notify_telegram")
+  notifyPush      Boolean       @default(false) @map("notify_push")
+  
+  // Sound alert
+  playSound       Boolean       @default(true) @map("play_sound")
+  soundType       String?       @map("sound_type") // default, urgent, subtle
+  
+  // Repeat settings
+  isRepeating     Boolean       @default(false) @map("is_repeating")
+  cooldownMinutes Int           @default(60) @map("cooldown_minutes")
+  lastTriggeredAt DateTime?     @map("last_triggered_at")
+  
+  // Status
+  isActive        Boolean       @default(true) @map("is_active")
+  triggeredCount  Int           @default(0) @map("triggered_count")
+  
+  // Note
+  note            String?
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@index([userId, isActive])
+  @@index([symbol, isActive])
+  @@map("price_alerts")
+}
+
+// ============================================
+// USER PREFERENCES - Enhanced
+// ============================================
+
+model UserPreferences {
+  id              String        @id @default(uuid())
+  userId          String        @unique @map("user_id")
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // UI Preferences
+  theme           String        @default("dark") // dark, light, system
+  language        String        @default("es")
+  timezone        String        @default("America/Argentina/Buenos_Aires")
+  
+  // Dashboard layout
+  dashboardLayout Json?         @map("dashboard_layout")
+  
+  // Chart preferences
+  defaultTimeframe String       @default("1h") @map("default_timeframe")
+  chartType       String        @default("candles") @map("chart_type")
+  showVolume      Boolean       @default(true) @map("show_volume")
+  
+  // Notification preferences
+  emailNotifications Boolean    @default(true) @map("email_notifications")
+  pushNotifications Boolean     @default(true) @map("push_notifications")
+  soundEnabled    Boolean       @default(true) @map("sound_enabled")
+  
+  // Trading preferences
+  defaultPositionSize Float?    @map("default_position_size")
+  riskPerTrade    Float         @default(2) @map("risk_per_trade") // % of portfolio
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("user_preferences")
+}
