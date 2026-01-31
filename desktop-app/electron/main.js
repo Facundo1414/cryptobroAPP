@@ -245,6 +245,15 @@ function setupAutoUpdater() {
   autoUpdater.logger = require('electron-log');
   autoUpdater.logger.transports.file.level = 'info';
 
+  // Configurar token para repositorio privado de GitHub
+  // El token se puede pasar via variable de entorno GH_TOKEN
+  // o configurar aquí directamente (no recomendado para código público)
+  if (process.env.GH_TOKEN) {
+    autoUpdater.requestHeaders = {
+      Authorization: `token ${process.env.GH_TOKEN}`
+    };
+  }
+
   // No auto-descargar, esperar confirmación del usuario
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = true;
