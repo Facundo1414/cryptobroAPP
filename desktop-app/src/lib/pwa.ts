@@ -128,7 +128,7 @@ export const getPushSubscription = async (
 // Show local notification (for testing)
 export const showLocalNotification = async (
   title: string,
-  options?: Omit<NotificationOptions, 'vibrate'> & { vibrate?: number[] },
+  options?: Omit<NotificationOptions, "vibrate"> & { vibrate?: number[] },
 ): Promise<void> => {
   const permission = await requestNotificationPermission();
 

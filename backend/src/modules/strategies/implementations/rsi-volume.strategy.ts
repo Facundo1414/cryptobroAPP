@@ -1,21 +1,26 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { StrategyResult, IStrategy, BacktestResult, StrategySignal } from "../strategies.types";
+import {
+  StrategyResult,
+  IStrategy,
+  BacktestResult,
+  StrategySignal,
+} from "../strategies.types";
 import { IndicatorsService } from "../../indicators/indicators.service";
 
 /**
  * RSI + Volume Confirmation Strategy
  * Win Rate: 68-72%
- * 
+ *
  * Entry Conditions (BUY):
  * - RSI < 30 (oversold)
  * - Volume > 1.5x average (confirmation)
  * - Price shows bullish reversal pattern
- * 
+ *
  * Entry Conditions (SELL):
  * - RSI > 70 (overbought)
  * - Volume > 1.5x average (confirmation)
  * - Price shows bearish reversal pattern
- * 
+ *
  * Exit Conditions:
  * - RSI returns to neutral zone (40-60)
  * - Stop Loss: 2% below entry (BUY) or above (SELL)
@@ -24,18 +29,25 @@ import { IndicatorsService } from "../../indicators/indicators.service";
 @Injectable()
 export class RsiVolumeStrategy implements IStrategy {
   private readonly logger = new Logger(RsiVolumeStrategy.name);
-  
+
   name = "RSI + Volume";
-  description = "Strategy combining RSI oversold/overbought with volume confirmation. Win rate: 68-72%";
+  description =
+    "Strategy combining RSI oversold/overbought with volume confirmation. Win rate: 68-72%";
 
   constructor(private readonly indicatorsService: IndicatorsService) {}
 
   async analyze(symbol: string, timeframe: string): Promise<StrategyResult> {
-    this.logger.log(`Analyzing ${symbol} with RSI+Volume strategy on ${timeframe}`);
+    this.logger.log(
+      `Analyzing ${symbol} with RSI+Volume strategy on ${timeframe}`,
+    );
 
     try {
       // Get RSI
-      const rsi = await this.indicatorsService.calculateRSI(symbol, timeframe, 14);
+      const rsi = await this.indicatorsService.calculateRSI(
+        symbol,
+        timeframe,
+        14,
+      );
       if (!rsi) {
         return {
           shouldEnter: false,
@@ -45,7 +57,11 @@ export class RsiVolumeStrategy implements IStrategy {
       }
 
       // Get Volume analysis
-      const volume = await this.indicatorsService.analyzeVolume(symbol, timeframe, 20);
+      const volume = await this.indicatorsService.analyzeVolume(
+        symbol,
+        timeframe,
+        20,
+      );
       if (!volume) {
         return {
           shouldEnter: false,
@@ -55,7 +71,10 @@ export class RsiVolumeStrategy implements IStrategy {
       }
 
       // Get current price from Bollinger Bands (includes current price)
-      const bb = await this.indicatorsService.calculateBollingerBands(symbol, timeframe);
+      const bb = await this.indicatorsService.calculateBollingerBands(
+        symbol,
+        timeframe,
+      );
       const currentPrice = bb?.currentPrice || 0;
 
       // Calculate confidence based on RSI extremity and volume strength
@@ -71,22 +90,30 @@ export class RsiVolumeStrategy implements IStrategy {
         confidence += 15;
 
         if (volume.isSignificant && volume.volumeRatio > 1.5) {
-          reasoning.push(`Volume confirmation: ${volume.volumeRatio.toFixed(2)}x average`);
+          reasoning.push(
+            `Volume confirmation: ${volume.volumeRatio.toFixed(2)}x average`,
+          );
           confidence += 20;
           shouldEnter = true;
           signalType = "BUY";
         } else if (volume.volumeRatio > 1.2) {
-          reasoning.push(`Moderate volume: ${volume.volumeRatio.toFixed(2)}x average`);
+          reasoning.push(
+            `Moderate volume: ${volume.volumeRatio.toFixed(2)}x average`,
+          );
           confidence += 10;
           shouldEnter = true;
           signalType = "BUY";
         } else {
-          reasoning.push(`Low volume (${volume.volumeRatio.toFixed(2)}x) - weak signal`);
+          reasoning.push(
+            `Low volume (${volume.volumeRatio.toFixed(2)}x) - weak signal`,
+          );
         }
 
         // Extra confidence for extreme oversold
         if (rsi.value < 20) {
-          reasoning.push("Extreme oversold condition - high probability reversal");
+          reasoning.push(
+            "Extreme oversold condition - high probability reversal",
+          );
           confidence += 10;
         }
       }
@@ -97,22 +124,30 @@ export class RsiVolumeStrategy implements IStrategy {
         confidence += 15;
 
         if (volume.isSignificant && volume.volumeRatio > 1.5) {
-          reasoning.push(`Volume confirmation: ${volume.volumeRatio.toFixed(2)}x average`);
+          reasoning.push(
+            `Volume confirmation: ${volume.volumeRatio.toFixed(2)}x average`,
+          );
           confidence += 20;
           shouldEnter = true;
           signalType = "SELL";
         } else if (volume.volumeRatio > 1.2) {
-          reasoning.push(`Moderate volume: ${volume.volumeRatio.toFixed(2)}x average`);
+          reasoning.push(
+            `Moderate volume: ${volume.volumeRatio.toFixed(2)}x average`,
+          );
           confidence += 10;
           shouldEnter = true;
           signalType = "SELL";
         } else {
-          reasoning.push(`Low volume (${volume.volumeRatio.toFixed(2)}x) - weak signal`);
+          reasoning.push(
+            `Low volume (${volume.volumeRatio.toFixed(2)}x) - weak signal`,
+          );
         }
 
         // Extra confidence for extreme overbought
         if (rsi.value > 80) {
-          reasoning.push("Extreme overbought condition - high probability reversal");
+          reasoning.push(
+            "Extreme overbought condition - high probability reversal",
+          );
           confidence += 10;
         }
       }
@@ -140,12 +175,14 @@ export class RsiVolumeStrategy implements IStrategy {
           type: signalType,
           price: currentPrice,
           confidence,
-          stopLoss: signalType === "BUY" 
-            ? currentPrice * (1 - stopLossPercent)
-            : currentPrice * (1 + stopLossPercent),
-          takeProfit: signalType === "BUY"
-            ? currentPrice * (1 + takeProfitPercent)
-            : currentPrice * (1 - takeProfitPercent),
+          stopLoss:
+            signalType === "BUY"
+              ? currentPrice * (1 - stopLossPercent)
+              : currentPrice * (1 + stopLossPercent),
+          takeProfit:
+            signalType === "BUY"
+              ? currentPrice * (1 + takeProfitPercent)
+              : currentPrice * (1 - takeProfitPercent),
           reasoning: reasoning.join(". "),
           metadata: {
             rsi: rsi.value,
@@ -160,9 +197,10 @@ export class RsiVolumeStrategy implements IStrategy {
         signal,
         shouldEnter,
         shouldExit,
-        analysis: reasoning.length > 0 
-          ? reasoning.join(". ") 
-          : `RSI at ${rsi.value.toFixed(2)} (${rsi.signal}), Volume ratio: ${volume.volumeRatio.toFixed(2)}x - No clear signal`,
+        analysis:
+          reasoning.length > 0
+            ? reasoning.join(". ")
+            : `RSI at ${rsi.value.toFixed(2)} (${rsi.signal}), Volume ratio: ${volume.volumeRatio.toFixed(2)}x - No clear signal`,
       };
     } catch (error) {
       this.logger.error(`Error analyzing ${symbol}:`, error);
@@ -182,7 +220,7 @@ export class RsiVolumeStrategy implements IStrategy {
   ): Promise<BacktestResult> {
     // Basic backtest structure - would need historical data iteration
     this.logger.log(`Backtesting ${symbol} from ${startDate} to ${endDate}`);
-    
+
     return {
       strategy: this.name,
       symbol,
@@ -192,7 +230,7 @@ export class RsiVolumeStrategy implements IStrategy {
       totalTrades: 0,
       winningTrades: 0,
       losingTrades: 0,
-      winRate: 0.70, // Expected based on strategy research
+      winRate: 0.7, // Expected based on strategy research
       totalProfit: 0,
       totalLoss: 0,
       netProfit: 0,
