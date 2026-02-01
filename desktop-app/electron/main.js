@@ -243,7 +243,12 @@ ipcMain.handle('restart-backend', async () => {
 function setupAutoUpdater() {
   // Configurar logging
   autoUpdater.logger = require('electron-log');
-  autoUpdater.logger.transports.file.level = 'info';
+  autoUpdater.logger.transports.file.level = 'debug';
+  
+  // Log para debug
+  console.log('[AutoUpdater] Setting up auto-updater...');
+  console.log('[AutoUpdater] App version:', app.getVersion());
+  console.log('[AutoUpdater] Is packaged:', app.isPackaged);
 
   // Repositorio público - no necesita token
   // Las actualizaciones se descargan directamente de GitHub Releases
@@ -254,10 +259,12 @@ function setupAutoUpdater() {
 
   // Eventos del auto-updater
   autoUpdater.on('checking-for-update', () => {
+    console.log('[AutoUpdater] Checking for updates...');
     sendStatusToWindow('Buscando actualizaciones...');
   });
 
   autoUpdater.on('update-available', (info) => {
+    console.log('[AutoUpdater] Update available:', info.version);
     dialog.showMessageBox(mainWindow, {
       type: 'info',
       title: 'Actualización Disponible',
@@ -273,11 +280,14 @@ function setupAutoUpdater() {
     });
   });
 
-  autoUpdater.on('update-not-available', () => {
+  autoUpdater.on('update-not-available', (info) => {
+    console.log('[AutoUpdater] No update available. Current version is latest.');
+    console.log('[AutoUpdater] Info:', JSON.stringify(info));
     sendStatusToWindow('Aplicación actualizada');
   });
 
   autoUpdater.on('error', (err) => {
+    console.error('[AutoUpdater] Error:', err);
     sendStatusToWindow('Error en actualización: ' + err.message);
   });
 

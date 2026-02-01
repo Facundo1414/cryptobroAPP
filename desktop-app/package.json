@@ -79,7 +79,8 @@
       "provider": "github",
       "owner": "Facundo1414",
       "repo": "cryptobroAPP",
-      "private": true
+      "private": false,
+      "releaseType": "release"
     }
   },
   "dependencies": {

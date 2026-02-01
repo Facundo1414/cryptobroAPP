@@ -36,10 +36,37 @@ const CRYPTOS = [
 ];
 
 const TIMEFRAMES = [
-  { value: '1h', label: '1 Hour' },
-  { value: '4h', label: '4 Hours' },
-  { value: '1d', label: '1 Day' },
+  { value: '1h', label: '1 Hora' },
+  { value: '4h', label: '4 Horas' },
+  { value: '1d', label: '1 Día' },
 ];
+
+// Fetch candles directly from Binance API
+async function fetchBinanceCandles(symbol: string, interval: string, limit: number = 50): Promise<ChartData[]> {
+  const response = await fetch(
+    `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+  );
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch from Binance');
+  }
+  
+  const data = await response.json();
+  
+  // Binance klines format: [openTime, open, high, low, close, volume, closeTime, ...]
+  return data.map((candle: any[]) => ({
+    timestamp: candle[0],
+    time: new Date(candle[0]).toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+    open: parseFloat(candle[1]),
+    high: parseFloat(candle[2]),
+    low: parseFloat(candle[3]),
+    close: parseFloat(candle[4]),
+    volume: parseFloat(candle[5]),
+  }));
+}
 
 export function TradingChart() {
   const [selectedCrypto, setSelectedCrypto] = useState('BTCUSDT');
@@ -54,31 +81,54 @@ export function TradingChart() {
   const loadChartData = async () => {
     setIsLoading(true);
     try {
+      // Try backend first
       const response = await marketDataApi.getCandles(
         selectedCrypto,
         selectedTimeframe,
         50
       ) as any;
 
-      const candles = response.data || response || [];
-      const formattedData = candles.map((candle: any) => ({
-        timestamp: candle.timestamp || candle.openTime,
-        time: new Date(candle.timestamp || candle.openTime).toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-        open: parseFloat(candle.open),
-        high: parseFloat(candle.high),
-        low: parseFloat(candle.low),
-        close: parseFloat(candle.close),
-        volume: parseFloat(candle.volume),
-      }));
+      // Safely extract candles array from response
+      let candles: any[] = [];
+      if (Array.isArray(response)) {
+        candles = response;
+      } else if (response && Array.isArray(response.data)) {
+        candles = response.data;
+      } else if (response && Array.isArray(response.candles)) {
+        candles = response.candles;
+      }
 
-      setChartData(formattedData);
+      if (candles.length > 0) {
+        const formattedData = candles.map((candle: any) => ({
+          timestamp: candle.timestamp || candle.openTime,
+          time: new Date(candle.timestamp || candle.openTime).toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          open: parseFloat(candle.open),
+          high: parseFloat(candle.high),
+          low: parseFloat(candle.low),
+          close: parseFloat(candle.close),
+          volume: parseFloat(candle.volume),
+        }));
+        setChartData(formattedData);
+      } else {
+        // Backend returned empty, fetch from Binance directly
+        console.log('Backend returned no candles, fetching from Binance...');
+        const binanceData = await fetchBinanceCandles(selectedCrypto, selectedTimeframe, 50);
+        setChartData(binanceData);
+      }
     } catch (error) {
-      console.error('Failed to load chart data:', error);
-      // Use mock data on error
-      setChartData(generateMockData());
+      console.log('Backend failed, fetching from Binance directly...');
+      try {
+        // Fallback to Binance API
+        const binanceData = await fetchBinanceCandles(selectedCrypto, selectedTimeframe, 50);
+        setChartData(binanceData);
+      } catch (binanceError) {
+        console.error('Failed to load chart data from all sources:', binanceError);
+        // Use mock data as last resort
+        setChartData(generateMockData());
+      }
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +146,7 @@ export function TradingChart() {
 
       data.push({
         timestamp,
-        time: new Date(timestamp).toLocaleTimeString('en-US', {
+        time: new Date(timestamp).toLocaleTimeString('es-ES', {
           hour: '2-digit',
           minute: '2-digit',
         }),
@@ -116,7 +166,7 @@ export function TradingChart() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Trading Chart</CardTitle>
+            <CardTitle className="text-lg">Gráfico de Trading</CardTitle>
             <div className="flex gap-2">
               <Skeleton className="h-10 w-32" />
               <Skeleton className="h-10 w-32" />
@@ -134,7 +184,7 @@ export function TradingChart() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Trading Chart</CardTitle>
+          <CardTitle className="text-lg">Gráfico de Trading</CardTitle>
           <div className="flex gap-2">
             <Select
               value={selectedCrypto}
@@ -186,7 +236,7 @@ export function TradingChart() {
                 borderRadius: '8px',
                 color: '#fff',
               }}
-              formatter={(value: any) => [`$${value.toFixed(2)}`, 'Price']}
+              formatter={(value: any) => [`$${value.toFixed(2)}`, 'Precio']}
             />
             <Area
               type="monotone"
