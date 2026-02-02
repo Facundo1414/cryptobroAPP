@@ -15,13 +15,26 @@ Aplicación de **análisis técnico automatizado** para criptomonedas que:
 - 📊 Analiza mercados usando las **3 estrategias más efectivas** (RSI+Volume, EMA Ribbon, MACD+RSI)
 - 🔔 Te **alerta en tiempo real** cuando detecta oportunidades de compra/venta
 - 📈 Incluye **backtesting robusto** para validar estrategias con datos históricos
-- 💻 **Aplicación Desktop** con Tauri + Next.js (Windows)
+- 💻 **Aplicación Desktop nativa** con Electron + Next.js (Windows)
 - 📰 Combina análisis técnico + sentimiento de mercado + noticias
 - 🔐 **Autenticación segura** con Supabase
-- 🌐 **Actualizaciones en tiempo real** mediante WebSocket
+- 🌐 **Actualizaciones automáticas** mediante auto-updater
 - 📱 Interfaz profesional y responsive
 
 **⚠️ IMPORTANTE**: Esta app NO ejecuta trades automáticos. Solo proporciona análisis y alertas para que tú operes manualmente en exchanges como Binance.
+
+## 💾 Instalación
+
+### Opción 1: Instalador (Recomendado)
+
+1. Ve a [**Releases**](https://github.com/Facundo1414/cryptobroAPP/releases/latest)
+2. Descarga `CryptoBro-Setup-1.1.0.exe`
+3. Ejecuta el instalador y sigue las instrucciones
+4. ✅ La app se actualizará automáticamente cuando haya nuevas versiones
+
+### Opción 2: Compilar desde Código
+
+Ver sección [Quick Start](#-quick-start) más abajo.
 
 ---
 
@@ -196,42 +209,83 @@ cryptobro/
 
 ```bash
 Node.js >= 18.x
-pnpm >= 8.x (recomendado) o npm
-PostgreSQL >= 14
-Redis >= 7.x
-Rust + Cargo (para Tauri)
-Xcode (para iOS)
+npm >= 9.x
+PostgreSQL >= 14 (o usa Supabase)
 ```
 
-### Instalación
+### Instalación y Uso
+
+#### 1️⃣ **Descarga la App Desktop (Recomendado)**
+
+**Para usar la app SIN compilar**:
+
+1. Ve a [Releases](https://github.com/Facundo1414/cryptobroAPP/releases/latest)
+2. Descarga `CryptoBro-Setup-1.1.0.exe`
+3. Ejecuta el instalador
+4. La app se actualizará automáticamente cuando haya nuevas versiones
+
+**✅ La app incluye todo lo necesario**: backend, frontend y base de datos configurada.
+
+#### 2️⃣ **Desarrollo Local (Opcional - Para Desarrolladores)**
+
+Si quieres modificar el código:
 
 ```bash
 # Clonar el repo
-git clone <repo-url>
+git clone https://github.com/Facundo1414/cryptobroAPP.git
 cd cryptobro
 
-# Instalar dependencias de todos los proyectos
-pnpm install
+# Instalar dependencias
+npm install
 
-# Setup variables de entorno
+# ⚠️ IMPORTANTE: Configura tus credenciales
 cp backend/.env.example backend/.env
-# Editar backend/.env con tus credenciales
-
-# Iniciar base de datos
-docker-compose up -d postgres redis
-
-# Correr migraciones
-cd backend && pnpm prisma migrate dev
+# Edita backend/.env con tus propias credenciales de Supabase
+# Ver SECURITY.md para más detalles
 
 # Iniciar backend
-cd backend && pnpm start:dev
+cd backend
+npm install
+npm run start:dev
 
-# Iniciar desktop app
-cd desktop-app && pnpm tauri dev
+# En otra terminal, iniciar frontend
+cd desktop-app
+npm install
+npm run dev
 
-# Iniciar mobile app
-cd mobile-app && pnpm ios
+# Para compilar el ejecutable
+cd desktop-app
+npm run build:export
+npm run dist:win
 ```
+
+⚠️ **NUNCA** hagas commit de tu archivo `.env` - Ver [SECURITY.md](./SECURITY.md)
+
+### Prerequisitos de Desarrollo
+
+```bash
+Node.js >= 18.x
+npm >= 9.x
+Electron >= 40.x (se instala automáticamente)
+```
+
+Para desarrollo avanzado (opcional):
+
+- PostgreSQL >= 14 (o usa Supabase)
+- Redis >= 7.x (opcional, para queues)
+
+## 🔒 Seguridad
+
+**⚠️ IMPORTANTE**: Este repositorio NO contiene credenciales sensibles.
+
+Para configurar tu propia instancia:
+
+1. Lee [SECURITY.md](./SECURITY.md) primero
+2. Copia `backend/.env.example` a `backend/.env`
+3. Configura tus propias credenciales de Supabase
+4. Nunca hagas commit de archivos `.env`
+
+**APIs Opcionales**: La app funciona sin API keys usando endpoints públicos. Solo añade keys si necesitas funciones premium.
 
 ## 📚 Documentación Completa
 
