@@ -17,8 +17,7 @@
     "electron:build:backend": "cd ../backend && npm run build",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "dist:win": "electron-builder --win --x64",
-    "dist:portable": "electron-builder --win --x64 --config.win.target=portable"
+    "dist:win": "electron-builder --win --x64"
   },
   "build": {
     "appId": "com.cryptobro.app",
@@ -35,37 +34,17 @@
     "extraResources": [
       {
         "from": "../backend/dist",
-        "to": "backend",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "../backend/node_modules",
-        "to": "backend/node_modules",
-        "filter": [
-          "**/*"
-        ]
+        "to": "backend/dist"
       },
       {
         "from": "../backend/package.json",
         "to": "backend/package.json"
-      },
-      {
-        "from": "../backend/.env",
-        "to": "backend/.env"
       }
     ],
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
           "arch": [
             "x64"
           ]
@@ -84,7 +63,6 @@
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": true,
       "allowElevation": false,
-      "requestExecutionLevel": "user",
       "packElevateHelper": false
     },
     "compression": "store",
