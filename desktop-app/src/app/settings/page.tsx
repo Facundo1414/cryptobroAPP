@@ -391,7 +391,49 @@ export default function SettingsPage() {
                 </button>
               </div>
             </div>
-          </SectionCard>
+            {/* Language Selector */}
+            <div className="mt-6">
+              <label className="text-sm font-medium text-gray-400 mb-3 block">Idioma / Language</label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => {
+                    toast.success('Idioma establecido en Español');
+                  }}
+                  className="p-4 rounded-xl border-2 border-blue-500 bg-gray-700/50 transition-all"
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-4xl">🇪🇸</span>
+                    <div className="text-center">
+                      <p className="font-medium text-white">Español</p>
+                      <p className="text-xs text-gray-500">Spanish</p>
+                    </div>
+                    <div className="mt-1">
+                      <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400">
+                        Activo
+                      </span>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    toast.info('English language coming soon! / ¡Inglés próximamente!');
+                  }}
+                  className="p-4 rounded-xl border-2 border-gray-700 hover:border-gray-600 transition-all opacity-50"
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-4xl">🇺🇸</span>
+                    <div className="text-center">
+                      <p className="font-medium text-white">English</p>
+                      <p className="text-xs text-gray-500">Próximamente</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-3 text-center">
+                🌍 El soporte multiidioma está en desarrollo activo
+              </p>
+            </div>          </SectionCard>
         )}
 
         {/* API Keys */}

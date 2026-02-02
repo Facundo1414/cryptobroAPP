@@ -21,9 +21,9 @@ import { WebsocketModule } from "./modules/websocket/websocket.module";
 import { WatchlistModule } from "./modules/watchlist/watchlist.module";
 import { NotificationModule } from "./modules/notifications/notification.module";
 
-// Sprint 5-6: New trading modules (temporalmente deshabilitados para compilar)
-// import { PaperTradingModule } from "./modules/paper-trading/paper-trading.module";
-// import { DCABotModule } from "./modules/dca-bot/dca-bot.module";
+// Sprint 5-6: Trading modules
+import { PaperTradingModule } from "./modules/paper-trading/paper-trading.module";
+import { DCABotModule } from "./modules/dca-bot/dca-bot.module";
 // import { GridBotModule } from "./modules/grid-bot/grid-bot.module";
 
 // Sprint 7: Telegram Bot (temporalmente deshabilitado)
@@ -76,9 +76,9 @@ import { RiskManagementModule } from "./modules/risk-management/risk-management.
     WatchlistModule,
     NotificationModule,
 
-    // Sprint 5-6: Trading bots (temporalmente deshabilitados)
-    // PaperTradingModule,
-    // DCABotModule,
+    // Sprint 5-6: Trading bots
+    PaperTradingModule,
+    DCABotModule,
     // GridBotModule,
 
     // Sprint 7: Telegram (temporalmente deshabilitado)

@@ -190,12 +190,23 @@ export function NotificationSettings() {
   if (notificationPermission === 'granted') {
     const handleTestNotification = async () => {
       try {
+        // Try service worker notification first
         await showNotification('🔔 Test', 'Las notificaciones funcionan correctamente.');
+        console.log('Test notification sent via service worker');
       } catch (error) {
-        console.error('Error showing notification:', error);
-        // Fallback: use browser notification directly
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('🔔 Test', { body: 'Las notificaciones funcionan correctamente.' });
+        console.error('Error showing notification via service worker:', error);
+        // Fallback: use browser notification API directly
+        try {
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('🔔 Test', { 
+              body: 'Las notificaciones funcionan correctamente.',
+              icon: '/icons/icon-192.png',
+            });
+            console.log('Test notification sent via Notification API');
+          }
+        } catch (fallbackError) {
+          console.error('Error showing notification via Notification API:', fallbackError);
+          alert('Las notificaciones están habilitadas pero hay un error al mostrarlas');
         }
       }
     };

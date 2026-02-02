@@ -33,10 +33,22 @@ export default function BacktestForm({ onBacktestStart, onBacktestComplete }: Ba
   const loadStrategies = async () => {
     try {
       const response = await strategiesApi.getAll() as any;
-      setStrategies(response.data || []);
+      // Map strategy names to ID-like format for the form
+      const strategiesList = response.data || response || [];
+      const mapped = strategiesList.map((s: any) => ({
+        id: s.name || s.id,
+        name: s.name || s.id,
+        description: s.description,
+      }));
+      setStrategies(mapped);
     } catch (error) {
       console.error('Error loading strategies:', error);
-      toast.error('Failed to load strategies');
+      // Fallback to hardcoded strategies
+      setStrategies([
+        { id: 'RSI_VOLUME', name: 'RSI_VOLUME', description: 'RSI with Volume Confirmation' },
+        { id: 'EMA_RIBBON', name: 'EMA_RIBBON', description: 'EMA Ribbon Strategy' },
+        { id: 'MACD_RSI', name: 'MACD_RSI', description: 'MACD + RSI Confluence' },
+      ]);
     }
   };
 

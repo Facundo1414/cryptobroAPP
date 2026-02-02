@@ -109,10 +109,10 @@ export function NotificationCenter({
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 w-96 bg-gray-800 border border-gray-700 
+          <div className="absolute right-0 top-full mt-2 w-96 bg-gray-800/95 backdrop-blur-sm border border-gray-700 
                           rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in">
             {/* Header */}
-            <div className="px-4 py-3 border-b border-gray-700 flex items-center justify-between">
+            <div className="px-4 py-3 border-b border-gray-700 flex items-center justify-between bg-gray-800">
               <h3 className="font-semibold text-white">Notifications</h3>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (

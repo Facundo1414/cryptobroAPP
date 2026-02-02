@@ -49,9 +49,18 @@ export default function NewsPage() {
   const loadNews = async () => {
     try {
       const response = await newsApi.getAll({ limit: 50 }) as any;
-      setNews(response.data || []);
-    } catch (error) {
+      const articles = response.data || response || [];
+      setNews(articles);
+      
+      // If no news from API, show informational message
+      if (articles.length === 0) {
+        toast.info('No hay noticias disponibles en este momento. Intenta más tarde.');
+      }
+    } catch (error: any) {
+      console.error('Error loading news:', error);
       toast.error('Error al cargar las noticias');
+      // Set empty array to show empty state instead of loading
+      setNews([]);
     } finally {
       setIsLoading(false);
     }

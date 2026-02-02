@@ -35,10 +35,17 @@ export class WatchlistService {
       `Adding ${dto.cryptoSymbol} to watchlist for user ${userId}`,
     );
 
-    // Find crypto by symbol
-    const crypto = await this.prisma.cryptocurrency.findUnique({
+    // Find crypto by symbol or binanceSymbol (in case user sends BTCUSDT instead of BTC)
+    let crypto = await this.prisma.cryptocurrency.findUnique({
       where: { symbol: dto.cryptoSymbol },
     });
+
+    // If not found, try to find by binanceSymbol
+    if (!crypto) {
+      crypto = await this.prisma.cryptocurrency.findUnique({
+        where: { binanceSymbol: dto.cryptoSymbol },
+      });
+    }
 
     if (!crypto) {
       throw new NotFoundException(
