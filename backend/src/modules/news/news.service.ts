@@ -11,6 +11,12 @@ export class NewsService {
   > = new Map();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+  // CryptoPanic API (free tier - no auth required for public posts)
+  private readonly CRYPTOPANIC_API =
+    "https://cryptopanic.com/api/free/v1/posts/";
+  // Alternative: CoinGecko news (embedded in their API)
+  private readonly COINGECKO_API = "https://api.coingecko.com/api/v3";
+
   async getNews(filters: NewsFilters = {}): Promise<NewsArticle[]> {
     const cacheKey = JSON.stringify(filters);
     const cached = this.newsCache.get(cacheKey);
@@ -38,26 +44,68 @@ export class NewsService {
   }
 
   private async fetchNewsFromAPI(filters: NewsFilters): Promise<NewsArticle[]> {
-    // Using CryptoPanic API (free tier) or mock data
-    // You can replace this with actual API call
-    const query = filters.crypto || "cryptocurrency";
-
     try {
-      // Example: CryptoPanic API
-      // const response = await axios.get('https://cryptopanic.com/api/v1/posts/', {
-      //   params: {
-      //     auth_token: process.env.CRYPTOPANIC_API_KEY,
-      //     currencies: filters.crypto,
-      //     filter: 'rising',
-      //   },
-      // });
+      // Try CryptoPanic free API first (public posts, no auth needed)
+      const response = await axios.get(this.CRYPTOPANIC_API, {
+        params: {
+          public: true,
+          filter: filters.crypto ? undefined : "rising",
+          currencies: filters.crypto?.replace("USDT", "") || undefined,
+        },
+        timeout: 5000,
+      });
 
-      // For now, return mock data
-      return this.getMockNews(filters);
+      if (response.data?.results) {
+        return response.data.results
+          .slice(0, filters.limit || 10)
+          .map((item: any) => ({
+            id: item.id?.toString() || Math.random().toString(),
+            title: item.title,
+            description: item.title, // CryptoPanic free tier doesn't include full content
+            url: item.url,
+            imageUrl:
+              item.metadata?.image ||
+              "https://via.placeholder.com/400x200?text=Crypto+News",
+            source: item.source?.title || "CryptoPanic",
+            publishedAt: new Date(item.published_at),
+            relatedCryptos:
+              item.currencies?.map((c: any) => `${c.code}USDT`) || [],
+          }));
+      }
     } catch (error) {
-      this.logger.error("API fetch error:", error);
-      return this.getMockNews(filters);
+      this.logger.warn("CryptoPanic API failed, trying alternative...");
     }
+
+    // Fallback: Try to get trending coins from CoinGecko (free, no auth)
+    try {
+      const response = await axios.get(
+        `${this.COINGECKO_API}/search/trending`,
+        {
+          timeout: 5000,
+        },
+      );
+
+      if (response.data?.coins) {
+        // Create news-like items from trending coins
+        return response.data.coins
+          .slice(0, filters.limit || 6)
+          .map((item: any) => ({
+            id: item.item.id,
+            title: `${item.item.name} (${item.item.symbol.toUpperCase()}) is trending - Rank #${item.item.market_cap_rank || "N/A"}`,
+            description: `${item.item.name} is currently trending on CoinGecko with a market cap rank of #${item.item.market_cap_rank || "N/A"}`,
+            url: `https://www.coingecko.com/en/coins/${item.item.id}`,
+            imageUrl: item.item.small || item.item.thumb,
+            source: "CoinGecko Trending",
+            publishedAt: new Date(),
+            relatedCryptos: [`${item.item.symbol.toUpperCase()}USDT`],
+          }));
+      }
+    } catch (error) {
+      this.logger.warn("CoinGecko API also failed, using mock data");
+    }
+
+    // Final fallback: mock data
+    return this.getMockNews(filters);
   }
 
   private async enrichWithSentiment(

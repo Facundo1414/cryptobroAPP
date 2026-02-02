@@ -188,6 +188,18 @@ export function NotificationSettings() {
   }
 
   if (notificationPermission === 'granted') {
+    const handleTestNotification = async () => {
+      try {
+        await showNotification('🔔 Test', 'Las notificaciones funcionan correctamente.');
+      } catch (error) {
+        console.error('Error showing notification:', error);
+        // Fallback: use browser notification directly
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('🔔 Test', { body: 'Las notificaciones funcionan correctamente.' });
+        }
+      }
+    };
+
     return (
       <div className="bg-green-500/10 rounded-lg p-4 border border-green-500/30">
         <div className="flex items-center gap-3">
@@ -201,7 +213,7 @@ export function NotificationSettings() {
             </p>
           </div>
           <button
-            onClick={() => showNotification('🔔 Test', 'Las notificaciones funcionan correctamente.')}
+            onClick={handleTestNotification}
             className="px-3 py-1.5 text-sm bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg transition-colors"
           >
             Probar

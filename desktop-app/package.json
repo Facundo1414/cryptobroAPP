@@ -17,7 +17,8 @@
     "electron:build:backend": "cd ../backend && npm run build",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "dist:win": "electron-builder --win --x64"
+    "dist:win": "electron-builder --win --x64",
+    "dist:portable": "electron-builder --win --x64 --config.win.target=portable"
   },
   "build": {
     "appId": "com.cryptobro.app",
@@ -62,9 +63,17 @@
           "arch": [
             "x64"
           ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
         }
       ],
-      "artifactName": "CryptoBro-Setup-${version}.${ext}"
+      "artifactName": "CryptoBro-Setup-${version}.${ext}",
+      "requestedExecutionLevel": "asInvoker",
+      "verifyUpdateCodeSignature": false
     },
     "nsis": {
       "oneClick": false,
@@ -73,8 +82,12 @@
       "createStartMenuShortcut": true,
       "shortcutName": "CryptoBro",
       "runAfterFinish": true,
-      "deleteAppDataOnUninstall": true
+      "deleteAppDataOnUninstall": true,
+      "allowElevation": false,
+      "requestExecutionLevel": "user",
+      "packElevateHelper": false
     },
+    "compression": "store",
     "publish": {
       "provider": "github",
       "owner": "Facundo1414",

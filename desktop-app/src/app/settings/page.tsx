@@ -21,13 +21,15 @@ import {
   ExternalLink,
   HelpCircle,
   PlayCircle,
-  BookOpen,
-  MessageCircle
+  MessageCircle,
+  Download
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { NotificationService } from '@/lib/notification-service';
 import { Tabs } from '@/components/ui';
 import { NotificationSettings as PWANotificationSettings } from '@/components/pwa/pwa-manager';
+import { VersionDisplay } from '@/components/updates';
 
 interface Settings {
   notifications: {
@@ -46,6 +48,7 @@ interface Settings {
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
   const router = useRouter();
+  const { theme: currentTheme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('profile');
   const [settings, setSettings] = useState<Settings>({
     notifications: {
@@ -65,6 +68,13 @@ export default function SettingsPage() {
     loadSettings();
   }, []);
 
+  // Sync theme state with next-themes
+  useEffect(() => {
+    if (currentTheme) {
+      setSettings(prev => ({ ...prev, theme: currentTheme as 'dark' | 'light' }));
+    }
+  }, [currentTheme]);
+
   const loadSettings = () => {
     const stored = localStorage.getItem('user-settings');
     if (stored) {
@@ -75,7 +85,7 @@ export default function SettingsPage() {
   const saveSettings = (newSettings: Settings) => {
     localStorage.setItem('user-settings', JSON.stringify(newSettings));
     setSettings(newSettings);
-    toast.success('Settings saved successfully');
+    toast.success('Configuración guardada');
   };
 
   const handleNotificationToggle = (key: keyof Settings['notifications']) => {
@@ -94,11 +104,12 @@ export default function SettingsPage() {
     }
   };
 
-  const handleThemeChange = (theme: 'dark' | 'light') => {
-    const newSettings = { ...settings, theme };
+  const handleThemeChange = (newTheme: 'dark' | 'light') => {
+    const newSettings = { ...settings, theme: newTheme };
     saveSettings(newSettings);
-    // Apply theme (you can add actual theme switching logic here)
-    document.documentElement.classList.toggle('light', theme === 'light');
+    // Apply theme using next-themes
+    setTheme(newTheme);
+    toast.success(`Tema cambiado a ${newTheme === 'dark' ? 'Oscuro' : 'Claro'}`);
   };
 
   const handleApiKeyUpdate = (key: keyof Settings['apiKeys'], value: string) => {
@@ -190,6 +201,7 @@ export default function SettingsPage() {
             { id: 'appearance', label: 'Apariencia' },
             { id: 'api-keys', label: 'Claves API' },
             { id: 'security', label: 'Seguridad' },
+            { id: 'updates', label: 'Actualizaciones' },
             { id: 'help', label: 'Ayuda' },
           ]}
           activeTab={activeTab}
@@ -366,9 +378,16 @@ export default function SettingsPage() {
                     </div>
                     <div className="text-center">
                       <p className="font-medium text-white">Claro</p>
-                      <p className="text-xs text-gray-500">Próximamente</p>
+                      <p className="text-xs text-gray-500">Tema claro</p>
                     </div>
                   </div>
+                  {settings.theme === 'light' && (
+                    <div className="mt-2 text-center">
+                      <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400">
+                        Activo
+                      </span>
+                    </div>
+                  )}
                 </button>
               </div>
             </div>
@@ -377,8 +396,16 @@ export default function SettingsPage() {
 
         {/* API Keys */}
         {activeTab === 'api-keys' && (
-          <SectionCard icon={Key} title="Claves API" description="Conecta servicios externos">
+          <SectionCard icon={Key} title="Claves API" description="Conecta servicios externos (opcional)">
             <div className="space-y-6">
+              {/* Info Banner */}
+              <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/30">
+                <p className="text-sm text-blue-400">
+                  <strong>ℹ️ Estas claves son opcionales.</strong> La app funciona sin ellas usando APIs públicas gratuitas.
+                  Solo agrégalas si necesitas funciones avanzadas.
+                </p>
+              </div>
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium text-white">Clave API de Binance</label>
@@ -398,30 +425,32 @@ export default function SettingsPage() {
                              text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <p className="text-xs text-gray-500">
-                  Opcional: Para funciones avanzadas de trading (solo lectura recomendado)
+                  🟢 <strong>Sin clave:</strong> Datos de mercado públicos (precios, gráficos, señales) funcionan perfectamente.<br/>
+                  🔵 <strong>Con clave:</strong> Acceso a tu balance y órdenes (solo lectura recomendado).
                 </p>
               </div>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium text-white">Clave API de Noticias</label>
-                  <a href="https://newsapi.org/register" 
+                  <a href="https://cryptopanic.com/developers/api/" 
                      target="_blank" 
                      rel="noopener noreferrer"
                      className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
-                    Obtener Clave <ExternalLink className="w-3 h-3" />
+                    Obtener Clave (Opcional) <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
                 <input
                   type="password"
-                  placeholder="Ingresa tu clave API de noticias"
+                  placeholder="Ingresa tu clave API de noticias (opcional)"
                   value={settings.apiKeys.newsApi}
                   onChange={(e) => handleApiKeyUpdate('newsApi', e.target.value)}
                   className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg
                              text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <p className="text-xs text-gray-500">
-                  Optional: For enhanced news features
+                  🟢 <strong>Sin clave:</strong> Noticias de CryptoPanic (públicas) y CoinGecko trending.<br/>
+                  🔵 <strong>Con clave:</strong> Más noticias y filtros avanzados.
                 </p>
               </div>
 
@@ -501,10 +530,30 @@ export default function SettingsPage() {
           </SectionCard>
         )}
 
+        {/* Updates Section */}
+        {activeTab === 'updates' && (
+          <SectionCard icon={Download} title="Actualizaciones" description="Mantén tu app actualizada">
+            <VersionDisplay />
+          </SectionCard>
+        )}
+
         {/* Help Section */}
         {activeTab === 'help' && (
           <SectionCard icon={HelpCircle} title="Ayuda y Soporte" description="Aprende a usar CryptoBro">
             <div className="space-y-4">
+              {/* Quick Start Guide */}
+              <div className="p-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-lg border border-emerald-500/30">
+                <h4 className="font-medium text-emerald-400 mb-2">🚀 ¿Qué puedo hacer con CryptoBro?</h4>
+                <ul className="text-sm text-gray-300 space-y-2">
+                  <li><strong>📊 Dashboard:</strong> Ver precios de criptomonedas en tiempo real</li>
+                  <li><strong>🎯 Señales:</strong> Recibir recomendaciones de compra/venta automáticas</li>
+                  <li><strong>🔔 Alertas:</strong> Configurar notificaciones cuando una crypto alcance tu precio objetivo</li>
+                  <li><strong>📰 Noticias:</strong> Estar al día con las últimas noticias del mercado</li>
+                  <li><strong>📈 Backtesting:</strong> Probar estrategias con datos históricos</li>
+                  <li><strong>🛡️ Riesgo:</strong> Calcular el tamaño ideal de tus posiciones</li>
+                </ul>
+              </div>
+
               {/* Tutorial Button */}
               <button 
                 onClick={() => {
@@ -521,8 +570,8 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3">
                   <PlayCircle className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
                   <div>
-                    <p className="font-medium text-white">Ver Tutorial de Nuevo</p>
-                    <p className="text-xs text-gray-400">Revisa cómo usar todas las funciones de CryptoBro</p>
+                    <p className="font-medium text-white">Ver Tutorial Interactivo</p>
+                    <p className="text-xs text-gray-400">Recorrido guiado por todas las funciones</p>
                   </div>
                 </div>
                 <span className="text-xs px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-400">
@@ -530,24 +579,24 @@ export default function SettingsPage() {
                 </span>
               </button>
 
-              {/* Quick Guide */}
-              <button 
-                className="w-full flex items-center justify-between px-4 py-3 
-                           bg-gray-700/30 hover:bg-gray-700/50 rounded-lg transition-colors
-                           border border-gray-700 text-left group"
-                onClick={() => toast.info('La guía rápida estará disponible pronto')}
-              >
-                <div className="flex items-center gap-3">
-                  <BookOpen className="w-5 h-5 text-purple-400" />
-                  <div>
-                    <p className="font-medium text-white">Guía Rápida</p>
-                    <p className="text-xs text-gray-400">Documentación completa de la aplicación</p>
-                  </div>
+              {/* FAQ Section */}
+              <div className="space-y-3 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                <h4 className="font-medium text-white">❓ Preguntas Frecuentes</h4>
+                <div className="space-y-2 text-sm">
+                  <details className="group">
+                    <summary className="cursor-pointer text-gray-300 hover:text-white">¿Necesito una cuenta de Binance?</summary>
+                    <p className="mt-2 text-gray-400 pl-4">No. Los datos de mercado son públicos. Solo necesitas cuenta si quieres ver tu balance.</p>
+                  </details>
+                  <details className="group">
+                    <summary className="cursor-pointer text-gray-300 hover:text-white">¿Las señales son 100% precisas?</summary>
+                    <p className="mt-2 text-gray-400 pl-4">No. Las señales tienen un win rate de 63-72%. Siempre investiga por tu cuenta antes de invertir.</p>
+                  </details>
+                  <details className="group">
+                    <summary className="cursor-pointer text-gray-300 hover:text-white">¿De dónde vienen las noticias?</summary>
+                    <p className="mt-2 text-gray-400 pl-4">Usamos CryptoPanic (API pública) y CoinGecko trending. Son fuentes gratuitas y confiables.</p>
+                  </details>
                 </div>
-                <span className="text-xs px-2 py-1 rounded-full bg-gray-700 text-gray-400">
-                  Coming Soon
-                </span>
-              </button>
+              </div>
 
               {/* Contact Support */}
               <button 
@@ -569,9 +618,9 @@ export default function SettingsPage() {
               {/* App Info */}
               <div className="mt-6 pt-4 border-t border-gray-700">
                 <div className="text-center text-gray-400 text-sm">
-                  <p className="font-medium text-white mb-1">CryptoBro v1.0.0</p>
+                  <p className="font-medium text-white mb-1">CryptoBro</p>
                   <p className="text-xs">Tu asistente inteligente de trading de criptomonedas</p>
-                  <p className="text-xs mt-2">© 2024 CryptoBro. Todos los derechos reservados.</p>
+                  <p className="text-xs mt-2">⚠️ Esto NO es consejo financiero. Invierte solo lo que puedas perder.</p>
                 </div>
               </div>
             </div>
