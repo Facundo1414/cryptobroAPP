@@ -63,8 +63,8 @@ export class DCABotService {
     }
 
     // Get current price
-    const ticker = await this.marketDataService.get24hrTicker(bot.symbol);
-    const currentPrice = parseFloat(ticker.lastPrice);
+    const ticker = await this.marketDataService.getTicker(bot.symbol);
+    const currentPrice = ticker.price;
 
     // Calculate target take profit price
     const targetTakeProfitPrice = bot.averagePrice
@@ -109,8 +109,8 @@ export class DCABotService {
     }
 
     // Get current price and place base order
-    const ticker = await this.marketDataService.get24hrTicker(bot.symbol);
-    const currentPrice = parseFloat(ticker.lastPrice);
+    const ticker = await this.marketDataService.getTicker(bot.symbol);
+    const currentPrice = ticker.price;
 
     const quantity = bot.baseOrderSize / currentPrice;
 
@@ -134,8 +134,8 @@ export class DCABotService {
 
     if (sellPosition && bot.currentQuantity > 0) {
       // Get current price and calculate P&L
-      const ticker = await this.marketDataService.get24hrTicker(bot.symbol);
-      const currentPrice = parseFloat(ticker.lastPrice);
+      const ticker = await this.marketDataService.getTicker(bot.symbol);
+      const currentPrice = ticker.price;
 
       const profit =
         (currentPrice - bot.averagePrice!) * bot.currentQuantity -
@@ -178,7 +178,13 @@ export class DCABotService {
   }
 
   async previewSetup(dto: PreviewDCABotDto) {
-    const orders = [];
+    const orders: Array<{
+      orderNumber: number;
+      type: string;
+      price: number;
+      deviation: number;
+      value: number;
+    }> = [];
     let totalInvestment = dto.baseOrderSize;
 
     // Base order

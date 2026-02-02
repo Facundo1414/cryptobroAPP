@@ -59,8 +59,8 @@ export class PaperTradingService {
     // Calculate unrealized P&L
     let unrealizedPnl = 0;
     for (const trade of openTrades) {
-      const ticker = await this.marketDataService.get24hrTicker(trade.symbol);
-      const currentPrice = parseFloat(ticker.lastPrice);
+      const ticker = await this.marketDataService.getTicker(trade.symbol);
+      const currentPrice = ticker.price;
       const pnl =
         trade.side === "BUY"
           ? (currentPrice - trade.entryPrice) * trade.quantity
@@ -121,8 +121,8 @@ export class PaperTradingService {
     const portfolio = await this.getPortfolio(userId);
 
     // Get current price
-    const ticker = await this.marketDataService.get24hrTicker(dto.symbol);
-    const currentPrice = parseFloat(ticker.lastPrice);
+    const ticker = await this.marketDataService.getTicker(dto.symbol);
+    const currentPrice = ticker.price;
 
     // Calculate cost
     const cost = currentPrice * dto.quantity;
@@ -140,6 +140,7 @@ export class PaperTradingService {
         type: dto.type,
         quantity: dto.quantity,
         entryPrice: currentPrice,
+        entryValue: cost,
         stopLoss: dto.stopLoss,
         takeProfit: dto.takeProfit,
         status: "OPEN",
@@ -175,8 +176,8 @@ export class PaperTradingService {
     }
 
     // Get current price
-    const ticker = await this.marketDataService.get24hrTicker(trade.symbol);
-    const exitPrice = parseFloat(ticker.lastPrice);
+    const ticker = await this.marketDataService.getTicker(trade.symbol);
+    const exitPrice = ticker.price;
 
     // Calculate P&L
     const pnl =
@@ -251,10 +252,8 @@ export class PaperTradingService {
     const enrichedTrades = await Promise.all(
       trades.map(async (trade) => {
         try {
-          const ticker = await this.marketDataService.get24hrTicker(
-            trade.symbol,
-          );
-          const currentPrice = parseFloat(ticker.lastPrice);
+          const ticker = await this.marketDataService.getTicker(trade.symbol);
+          const currentPrice = ticker.price;
           const unrealizedPnl =
             trade.side === "BUY"
               ? (currentPrice - trade.entryPrice) * trade.quantity
