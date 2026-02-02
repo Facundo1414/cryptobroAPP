@@ -1,6 +1,6 @@
 {
   "name": "crypto-analyzer-desktop",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "CryptoBro - Aplicación de Escritorio para Trading de Criptomonedas",
   "main": "electron/main.js",
   "author": "Facu",
@@ -17,7 +17,8 @@
     "electron:build:backend": "cd ../backend && npm run build",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "dist:win": "electron-builder --win --x64"
+    "dist:win": "node ../validate-build-config.js && electron-builder --win --x64",
+    "dist:safe": "node ../validate-build-config.js && npm run build:export && cd ../backend && npm run build && cd ../desktop-app && electron-builder --win --x64"
   },
   "build": {
     "appId": "com.cryptobro.app",
@@ -35,6 +36,16 @@
       {
         "from": "../backend/dist",
         "to": "backend/dist"
+      },
+      {
+        "from": "../backend/node_modules",
+        "to": "backend/node_modules",
+        "filter": [
+          "**/*",
+          "!**/@types/**",
+          "!**/test/**",
+          "!**/*.md"
+        ]
       },
       {
         "from": "../backend/package.json",

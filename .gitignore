@@ -19,6 +19,7 @@ out/
 .env.development.local
 .env.test.local
 .env.production.local
+backend/src/config/default-env.ts
 
 # Logs
 logs/

@@ -16,6 +16,7 @@ lerna-debug.log*
 .env
 .env.local
 .env.*.local
+src/config/default-env.ts
 
 # IDE
 .idea/

@@ -80,9 +80,9 @@ function startFrontendServer() {
 function startBackend() {
   console.log('🚀 Starting backend server...');
   
-  // El script está en dist/main.js cuando no está empaquetado
+  // El script está en dist/main.js
   const backendScript = app.isPackaged
-    ? path.join(BACKEND_PATH, 'main.js')
+    ? path.join(BACKEND_PATH, 'dist', 'main.js')
     : path.join(BACKEND_PATH, 'dist', 'main.js');
   
   console.log(`📁 Backend path: ${backendScript}`);
