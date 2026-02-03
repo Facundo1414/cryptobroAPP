@@ -58,14 +58,14 @@ export class SignalsService {
     const [totalCount, recentCount] = await Promise.all([
       this.prisma.signal.count({
         where: {
-          createdAt: {
+          timestamp: {
             gte: cutoffTime,
           },
         },
       }),
       this.prisma.signal.count({
         where: {
-          createdAt: {
+          timestamp: {
             gte: recentCutoff,
           },
         },
