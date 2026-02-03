@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "../../prisma/prisma.service";
+import { PrismaService } from "@/common/prisma/prisma.service";
 import { StrategiesService } from "../strategies/strategies.service";
 import { IndicatorsService } from "../indicators/indicators.service";
 import { CreateBacktestDto } from "./dto/create-backtest.dto";
@@ -55,11 +55,27 @@ export class BacktestingService {
       slippage: dto.slippage || 0.05,
     };
 
+    // Find cryptocurrency by symbol
+    const crypto = await this.prisma.cryptocurrency.findFirst({
+      where: {
+        OR: [
+          { symbol: config.cryptoSymbol },
+          { binanceSymbol: config.cryptoSymbol },
+        ],
+      },
+    });
+
+    if (!crypto) {
+      throw new NotFoundException(
+        `Cryptocurrency ${config.cryptoSymbol} not found`,
+      );
+    }
+
     // Create backtest record in database
     const backtest = await this.prisma.backtest.create({
       data: {
         userId,
-        cryptoId: config.strategyId, // TODO: should be actual crypto ID
+        cryptoId: crypto.id,
         name: `Backtest ${config.cryptoSymbol} ${config.timeframe}`,
         startDate: config.startDate,
         endDate: config.endDate,

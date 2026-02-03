@@ -1,0 +1,118 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "refresh": "Refresh",
+    "noData": "No data available"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "markets": "Markets",
+    "signals": "Signals",
+    "riskManagement": "Risk Management",
+    "paperTrading": "Paper Trading",
+    "dcaBot": "DCA Bot",
+    "backtesting": "Backtesting",
+    "news": "News",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Monitor the market and receive trading signals in real-time",
+    "marketOpen": "Market Open",
+    "portfolioValue": "Portfolio Value",
+    "activeSignals": "Active Signals",
+    "monthlyGain": "Monthly Gain",
+    "bitcoin": "Bitcoin",
+    "today": "today",
+    "newSignals": "new",
+    "noData": "No data",
+    "noHistoricalData": "No historical data",
+    "vsPrevWeek": "vs {{value}} prev week"
+  },
+  "riskManagement": {
+    "title": "Risk Management",
+    "subtitle": "Calculate optimal position sizes and manage your trading risk",
+    "accountBalance": "Account Balance",
+    "tabs": {
+      "positionSizer": "Position Sizer",
+      "kelly": "Kelly Criterion",
+      "portfolio": "Portfolio Risk"
+    },
+    "positionSizer": {
+      "title": "Trade Parameters",
+      "accountBalanceLabel": "Account Balance (USDT)",
+      "riskPerTrade": "Risk per Trade (%)",
+      "entryPrice": "Entry Price",
+      "stopLoss": "Stop Loss Price",
+      "takeProfit": "Take Profit Price (Optional)",
+      "leverage": "Leverage (1x = Spot)",
+      "calculate": "Calculate Position Size",
+      "results": "Results",
+      "unitsToBuy": "Units to Buy/Sell",
+      "enterParameters": "Enter your trade parameters and click calculate",
+      "placeholders": {
+        "entryPrice": "e.g., 65000",
+        "stopLoss": "e.g., 63000",
+        "takeProfit": "e.g., 70000"
+      }
+    },
+    "kelly": {
+      "title": "Kelly Criterion Calculator",
+      "subtitle": "Calculate optimal bet sizing based on your trading statistics",
+      "winRate": "Win Rate (%)",
+      "avgWin": "Average Win ($)",
+      "avgLoss": "Average Loss ($)",
+      "calculate": "Calculate Kelly %",
+      "results": "Results",
+      "placeholders": {
+        "winRate": "e.g., 55",
+        "avgWin": "e.g., 100",
+        "avgLoss": "e.g., 50"
+      }
+    }
+  },
+  "riskWidget": {
+    "title": "Risk Overview",
+    "portfolioRisk": "Portfolio Risk",
+    "openPositions": "Open Positions",
+    "maxDrawdown": "Max Drawdown",
+    "winRate": "Win Rate",
+    "riskExposure": "Risk Exposure",
+    "warning": "Your portfolio risk is elevated. Consider reducing position sizes or adding stop losses.",
+    "tools": "Risk Management Tools"
+  },
+  "watchlist": {
+    "title": "Watchlist",
+    "empty": "No cryptocurrencies in your watchlist yet.",
+    "buy": "Buy",
+    "sell": "Sell",
+    "errors": {
+      "loadFailed": "Failed to load watchlist",
+      "removeFailed": "Failed to remove from watchlist"
+    },
+    "success": {
+      "removed": "{{symbol}} removed from watchlist"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": {
+      "title": "Idioma / Language",
+      "spanish": "Español",
+      "english": "English",
+      "comingSoon": "Coming Soon",
+      "active": "Active",
+      "description": "Spanish"
+    }
+  }
+}

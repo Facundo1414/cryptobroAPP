@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/dashboard-layout';
 import { useAuthStore } from '@/stores/auth-store';
+import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
 import { 
   User, 
@@ -45,10 +46,61 @@ interface Settings {
   };
 }
 
+// Toggle Switch Component
+const ToggleSwitch = ({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: () => void;
+}) => (
+  <button
+    onClick={onChange}
+    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+      checked ? 'bg-blue-600' : 'bg-gray-700'
+    }`}
+  >
+    <span
+      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+        checked ? 'translate-x-6' : 'translate-x-1'
+      }`}
+    />
+  </button>
+);
+
+// Section Card Component
+const SectionCard = ({ 
+  icon: Icon, 
+  title, 
+  description, 
+  children 
+}: { 
+  icon: any; 
+  title: string; 
+  description?: string;
+  children: React.ReactNode;
+}) => (
+  <div className="bg-gray-800 rounded-xl border border-gray-700/50 overflow-hidden">
+    <div className="px-6 py-4 border-b border-gray-700/50 flex items-center gap-3">
+      <div className="w-10 h-10 rounded-lg bg-gray-700/50 flex items-center justify-center">
+        <Icon className="w-5 h-5 text-gray-400" />
+      </div>
+      <div>
+        <h3 className="font-semibold text-white">{title}</h3>
+        {description && <p className="text-sm text-gray-500">{description}</p>}
+      </div>
+    </div>
+    <div className="p-6">
+      {children}
+    </div>
+  </div>
+);
+
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
   const router = useRouter();
   const { theme: currentTheme, setTheme } = useTheme();
+  const { language, setLanguage } = useTranslation();
   const [activeTab, setActiveTab] = useState('profile');
   const [settings, setSettings] = useState<Settings>({
     notifications: {
@@ -125,55 +177,6 @@ export default function SettingsPage() {
   const handleSaveApiKeys = () => {
     saveSettings(settings);
   };
-
-  const ToggleSwitch = ({
-    checked,
-    onChange,
-  }: {
-    checked: boolean;
-    onChange: () => void;
-  }) => (
-    <button
-      onClick={onChange}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-        checked ? 'bg-blue-600' : 'bg-gray-700'
-      }`}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-          checked ? 'translate-x-6' : 'translate-x-1'
-        }`}
-      />
-    </button>
-  );
-
-  // Section Card Component
-  const SectionCard = ({ 
-    icon: Icon, 
-    title, 
-    description, 
-    children 
-  }: { 
-    icon: any; 
-    title: string; 
-    description?: string;
-    children: React.ReactNode;
-  }) => (
-    <div className="bg-gray-800 rounded-xl border border-gray-700/50 overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-700/50 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gray-700/50 flex items-center justify-center">
-          <Icon className="w-5 h-5 text-gray-400" />
-        </div>
-        <div>
-          <h3 className="font-semibold text-white">{title}</h3>
-          {description && <p className="text-sm text-gray-500">{description}</p>}
-        </div>
-      </div>
-      <div className="p-6">
-        {children}
-      </div>
-    </div>
-  );
 
   return (
     <DashboardLayout>
@@ -397,9 +400,14 @@ export default function SettingsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={() => {
+                    setLanguage('es');
                     toast.success('Idioma establecido en Español');
                   }}
-                  className="p-4 rounded-xl border-2 border-blue-500 bg-gray-700/50 transition-all"
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    language === 'es'
+                      ? 'border-blue-500 bg-gray-700/50'
+                      : 'border-gray-700 hover:border-gray-600 opacity-70 hover:opacity-100'
+                  }`}
                 >
                   <div className="flex flex-col items-center gap-2">
                     <span className="text-4xl">🇪🇸</span>
@@ -407,26 +415,40 @@ export default function SettingsPage() {
                       <p className="font-medium text-white">Español</p>
                       <p className="text-xs text-gray-500">Spanish</p>
                     </div>
-                    <div className="mt-1">
-                      <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400">
-                        Activo
-                      </span>
-                    </div>
+                    {language === 'es' && (
+                      <div className="mt-1">
+                        <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400">
+                          Activo
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </button>
 
                 <button
                   onClick={() => {
-                    toast.info('English language coming soon! / ¡Inglés próximamente!');
+                    setLanguage('en');
+                    toast.success('Language set to English');
                   }}
-                  className="p-4 rounded-xl border-2 border-gray-700 hover:border-gray-600 transition-all opacity-50"
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    language === 'en'
+                      ? 'border-blue-500 bg-gray-700/50'
+                      : 'border-gray-700 hover:border-gray-600 opacity-70 hover:opacity-100'
+                  }`}
                 >
                   <div className="flex flex-col items-center gap-2">
                     <span className="text-4xl">🇺🇸</span>
                     <div className="text-center">
                       <p className="font-medium text-white">English</p>
-                      <p className="text-xs text-gray-500">Próximamente</p>
+                      <p className="text-xs text-gray-500">English</p>
                     </div>
+                    {language === 'en' && (
+                      <div className="mt-1">
+                        <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400">
+                          Active
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </button>
               </div>

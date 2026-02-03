@@ -46,6 +46,39 @@ export class SignalsService {
   }
 
   /**
+   * Get count of active signals
+   */
+  async getActiveSignalsCount(
+    hours: number = 24,
+  ): Promise<{ count: number; newCount: number }> {
+    const now = new Date();
+    const cutoffTime = new Date(now.getTime() - hours * 60 * 60 * 1000);
+    const recentCutoff = new Date(now.getTime() - 1 * 60 * 60 * 1000); // Last 1 hour
+
+    const [totalCount, recentCount] = await Promise.all([
+      this.prisma.signal.count({
+        where: {
+          createdAt: {
+            gte: cutoffTime,
+          },
+        },
+      }),
+      this.prisma.signal.count({
+        where: {
+          createdAt: {
+            gte: recentCutoff,
+          },
+        },
+      }),
+    ]);
+
+    return {
+      count: totalCount,
+      newCount: recentCount,
+    };
+  }
+
+  /**
    * Get all signals
    */
   async findAll(

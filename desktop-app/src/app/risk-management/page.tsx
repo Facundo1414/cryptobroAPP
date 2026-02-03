@@ -204,10 +204,10 @@ export default function RiskManagementPage() {
               <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
                 <Shield className="w-6 h-6 text-emerald-400" />
               </div>
-              Risk Management
+              Gestión de Riesgo
             </h1>
             <p className="text-gray-400 mt-2">
-              Calculate optimal position sizes and manage your trading risk
+              Calcula el tamaño óptimo de tus posiciones y gestiona tu riesgo de trading
             </p>
           </div>
         </div>
@@ -217,7 +217,7 @@ export default function RiskManagementPage() {
           <div className="p-4 rounded-xl bg-gray-800 border border-gray-700/50">
             <div className="flex items-center gap-2 text-gray-400 text-sm mb-2">
               <DollarSign className="w-4 h-4" />
-              Account Balance
+              Balance de Cuenta
             </div>
             <p className="text-2xl font-bold text-white">
               ${parseFloat(positionParams.accountBalance || '0').toLocaleString()}
@@ -260,9 +260,9 @@ export default function RiskManagementPage() {
         {/* Tabs */}
         <Tabs
           tabs={[
-            { id: 'position-sizer', label: 'Position Sizer' },
-            { id: 'kelly', label: 'Kelly Criterion' },
-            { id: 'portfolio', label: 'Portfolio Risk' },
+            { id: 'position-sizer', label: 'Calculadora de Posición' },
+            { id: 'kelly', label: 'Criterio de Kelly' },
+            { id: 'portfolio', label: 'Riesgo de Portafolio' },
           ]}
           activeTab={activeTab}
           onChange={setActiveTab}
@@ -275,13 +275,13 @@ export default function RiskManagementPage() {
             <div className="bg-gray-800 rounded-xl border border-gray-700/50 p-6">
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <Calculator className="w-5 h-5 text-blue-400" />
-                Trade Parameters
+                Parámetros de Operación
               </h2>
 
               <div className="space-y-4">
                 {/* Account Balance */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Account Balance (USDT)</label>
+                  <label className="block text-sm text-gray-400 mb-2">Balance de Cuenta (USDT)</label>
                   <input
                     type="number"
                     value={positionParams.accountBalance}
@@ -294,7 +294,7 @@ export default function RiskManagementPage() {
                 {/* Risk Percentage */}
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">
-                    Risk per Trade (%)
+                    Riesgo por Operación (%)
                     {riskLevel && (
                       <span className={`ml-2 px-2 py-0.5 rounded text-xs ${riskLevel.bg} ${riskLevel.color}`}>
                         {riskLevel.level}
@@ -328,12 +328,12 @@ export default function RiskManagementPage() {
 
                 {/* Entry Price */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Entry Price</label>
+                  <label className="block text-sm text-gray-400 mb-2">Precio de Entrada</label>
                   <input
                     type="number"
                     value={positionParams.entryPrice}
                     onChange={(e) => setPositionParams({ ...positionParams, entryPrice: e.target.value })}
-                    placeholder="e.g., 65000"
+                    placeholder="ej: 65000"
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg
                                text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
@@ -343,13 +343,13 @@ export default function RiskManagementPage() {
                 <div>
                   <label className="text-sm text-gray-400 mb-2 flex items-center gap-1">
                     <Shield className="w-4 h-4 text-red-400" />
-                    Stop Loss Price
+                    Precio de Stop Loss
                   </label>
                   <input
                     type="number"
                     value={positionParams.stopLossPrice}
                     onChange={(e) => setPositionParams({ ...positionParams, stopLossPrice: e.target.value })}
-                    placeholder="e.g., 63000"
+                    placeholder="ej: 63000"
                     className="w-full px-4 py-3 bg-gray-700/50 border border-red-500/30 rounded-lg
                                text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
@@ -359,13 +359,13 @@ export default function RiskManagementPage() {
                 <div>
                   <label className="text-sm text-gray-400 mb-2 flex items-center gap-1">
                     <Target className="w-4 h-4 text-green-400" />
-                    Take Profit Price (Optional)
+                    Precio de Take Profit (Opcional)
                   </label>
                   <input
                     type="number"
                     value={positionParams.takeProfitPrice}
                     onChange={(e) => setPositionParams({ ...positionParams, takeProfitPrice: e.target.value })}
-                    placeholder="e.g., 70000"
+                    placeholder="ej: 70000"
                     className="w-full px-4 py-3 bg-gray-700/50 border border-green-500/30 rounded-lg
                                text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
@@ -373,7 +373,7 @@ export default function RiskManagementPage() {
 
                 {/* Leverage */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Leverage (1x = Spot)</label>
+                  <label className="block text-sm text-gray-400 mb-2">Apalancamiento (1x = Spot)</label>
                   <input
                     type="number"
                     value={positionParams.leverage}
@@ -398,7 +398,7 @@ export default function RiskManagementPage() {
                   ) : (
                     <Calculator className="w-4 h-4" />
                   )}
-                  Calculate Position Size
+                  Calcular Tamaño de Posición
                 </button>
               </div>
             </div>
@@ -407,7 +407,7 @@ export default function RiskManagementPage() {
             <div className="bg-gray-800 rounded-xl border border-gray-700/50 p-6">
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-emerald-400" />
-                Results
+                Resultados
               </h2>
 
               {positionResult ? (
@@ -417,7 +417,7 @@ export default function RiskManagementPage() {
                     <div className="text-5xl font-bold text-emerald-400">
                       {positionResult.positionSize.toFixed(6)}
                     </div>
-                    <div className="text-gray-400 mt-1">Units to Buy/Sell</div>
+                    <div className="text-gray-400 mt-1">Unidades a Comprar/Vender</div>
                     <div className="text-xl text-gray-300 mt-2">
                       ≈ ${positionResult.positionValue.toLocaleString()} USDT
                     </div>
@@ -474,7 +474,7 @@ export default function RiskManagementPage() {
               ) : (
                 <div className="text-center py-12 text-gray-500">
                   <Calculator className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Enter your trade parameters and click calculate</p>
+                  <p>Ingresa tus parámetros de operación y haz clic en calcular</p>
                 </div>
               )}
             </div>
@@ -487,42 +487,42 @@ export default function RiskManagementPage() {
             <div className="bg-gray-800 rounded-xl border border-gray-700/50 p-6">
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <PieChart className="w-5 h-5 text-purple-400" />
-                Kelly Criterion Calculator
+                Calculadora del Criterio de Kelly
               </h2>
               <p className="text-gray-400 text-sm mb-4">
-                Calculate optimal bet sizing based on your trading statistics
+                Calcula el tamaño óptimo de apuesta basado en tus estadísticas de trading
               </p>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Win Rate (%)</label>
+                  <label className="block text-sm text-gray-400 mb-2">Tasa de Éxito (%)</label>
                   <input
                     type="number"
                     value={kellyParams.winRate}
                     onChange={(e) => setKellyParams({ ...kellyParams, winRate: e.target.value })}
-                    placeholder="e.g., 55"
+                    placeholder="ej: 55"
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg
                                text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Average Win ($)</label>
+                  <label className="block text-sm text-gray-400 mb-2">Ganancia Promedio ($)</label>
                   <input
                     type="number"
                     value={kellyParams.avgWin}
                     onChange={(e) => setKellyParams({ ...kellyParams, avgWin: e.target.value })}
-                    placeholder="e.g., 100"
+                    placeholder="ej: 100"
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg
                                text-white focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Average Loss ($)</label>
+                  <label className="block text-sm text-gray-400 mb-2">Pérdida Promedio ($)</label>
                   <input
                     type="number"
                     value={kellyParams.avgLoss}
                     onChange={(e) => setKellyParams({ ...kellyParams, avgLoss: e.target.value })}
-                    placeholder="e.g., 50"
+                    placeholder="ej: 50"
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg
                                text-white focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
@@ -534,13 +534,13 @@ export default function RiskManagementPage() {
                              font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   <Zap className="w-4 h-4" />
-                  Calculate Kelly %
+                  Calcular % de Kelly
                 </button>
               </div>
             </div>
 
             <div className="bg-gray-800 rounded-xl border border-gray-700/50 p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Results</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">Resultados</h2>
 
               {kellyResult ? (
                 <div className="space-y-4">

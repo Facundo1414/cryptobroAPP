@@ -448,9 +448,9 @@ export class IndicatorsService {
   }
 
   /**
-   * Get candles from database
+   * Get candles from database (public for strategies)
    */
-  private async getCandles(symbol: string, timeframe: string, limit: number) {
+  async getCandles(symbol: string, timeframe: string, limit: number) {
     const crypto = await this.prisma.cryptocurrency.findUnique({
       where: { binanceSymbol: symbol },
     });

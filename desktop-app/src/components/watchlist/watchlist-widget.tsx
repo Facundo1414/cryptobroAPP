@@ -38,7 +38,7 @@ export function WatchlistWidget() {
       setWatchlist(response.data || response || []);
     } catch (error) {
       console.error('Error loading watchlist:', error);
-      toast.error('Failed to load watchlist');
+      toast.error('Error al cargar lista de seguimiento');
     } finally {
       setIsLoading(false);
     }
@@ -47,10 +47,10 @@ export function WatchlistWidget() {
   const removeFromWatchlist = async (symbol: string) => {
     try {
       await watchlistApi.remove(symbol);
-      toast.success(`${symbol} removed from watchlist`);
+      toast.success(`${symbol} eliminado de la lista de seguimiento`);
       loadWatchlist();
     } catch (error) {
-      toast.error('Failed to remove from watchlist');
+      toast.error('Error al eliminar de la lista de seguimiento');
     }
   };
 
@@ -60,7 +60,7 @@ export function WatchlistWidget() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Star className="h-5 w-5 text-yellow-500" />
-            Watchlist
+            Lista de Seguimiento
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -78,12 +78,12 @@ export function WatchlistWidget() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Star className="h-5 w-5 text-yellow-500" />
-            Watchlist
+            Lista de Seguimiento
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-center text-sm text-gray-400 py-8">
-            No cryptocurrencies in your watchlist yet.
+            No hay criptomonedas en tu lista de seguimiento aún.
           </p>
         </CardContent>
       </Card>
@@ -95,7 +95,7 @@ export function WatchlistWidget() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Star className="h-5 w-5 text-yellow-500" />
-          Watchlist ({watchlist.length})
+          Lista de Seguimiento ({watchlist.length})
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -121,12 +121,12 @@ export function WatchlistWidget() {
               <div className="flex items-center gap-2">
                 {item.alertOnBuy && (
                   <Badge variant="outline" className="border-green-500 text-green-500">
-                    Buy
+                    Compra
                   </Badge>
                 )}
                 {item.alertOnSell && (
                   <Badge variant="outline" className="border-red-500 text-red-500">
-                    Sell
+                    Venta
                   </Badge>
                 )}
                 <Button

@@ -4,6 +4,8 @@ import { StrategiesController } from "./strategies.controller";
 import { RsiVolumeStrategy } from "./implementations/rsi-volume.strategy";
 import { EmaRibbonStrategy } from "./implementations/ema-ribbon.strategy";
 import { MacdRsiStrategy } from "./implementations/macd-rsi.strategy";
+import { SmartMoneyStrategy } from "./implementations/smart-money.strategy";
+import { OrderFlowStrategy } from "./implementations/order-flow.strategy";
 import { IndicatorsModule } from "../indicators/indicators.module";
 
 @Module({
@@ -14,6 +16,8 @@ import { IndicatorsModule } from "../indicators/indicators.module";
     RsiVolumeStrategy,
     EmaRibbonStrategy,
     MacdRsiStrategy,
+    SmartMoneyStrategy,
+    OrderFlowStrategy,
   ],
   exports: [StrategiesService],
 })

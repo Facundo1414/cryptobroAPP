@@ -33,7 +33,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Mercados', href: '/markets', icon: TrendingUp },
   { name: 'Señales', href: '/signals', icon: Activity },
-  { name: 'Risk Management', href: '/risk-management', icon: Shield },
+  { name: 'Gestión de Riesgo', href: '/risk-management', icon: Shield },
   { name: 'Paper Trading', href: '/paper-trading', icon: Wallet },
   { name: 'DCA Bot', href: '/dca-bot', icon: Bot },
   { name: 'Backtesting', href: '/backtesting', icon: LineChart },

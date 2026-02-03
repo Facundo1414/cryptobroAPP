@@ -34,6 +34,20 @@ export class SignalsController {
     return this.signalsService.getStatistics(cryptoId);
   }
 
+  @Get("active/count")
+  @ApiOperation({ summary: "Get count of active signals" })
+  @ApiQuery({
+    name: "hours",
+    required: false,
+    example: 24,
+    description: "Filter signals from last X hours",
+  })
+  async getActiveCount(@Query("hours") hours?: number) {
+    return this.signalsService.getActiveSignalsCount(
+      hours ? parseInt(hours.toString()) : 24,
+    );
+  }
+
   @Get("recent")
   @ApiOperation({ summary: "Get recent signals across all cryptos" })
   @ApiQuery({ name: "limit", required: false, example: 5 })

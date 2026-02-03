@@ -165,6 +165,9 @@ export const signalsApi = {
   getRecent: (limit?: number, cryptoSymbol?: string) =>
     apiClient.get("/signals/recent", { params: { limit, cryptoSymbol } }),
 
+  getActiveCount: (hours?: number) =>
+    apiClient.get("/signals/active/count", { params: { hours } }),
+
   generate: (cryptoSymbol: string, timeframe: string) =>
     apiClient.post(`/signals/generate/${cryptoSymbol}`, null, {
       params: { timeframe },

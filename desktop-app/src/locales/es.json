@@ -1,0 +1,118 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "refresh": "Actualizar",
+    "noData": "No hay datos"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "markets": "Mercados",
+    "signals": "Señales",
+    "riskManagement": "Gestión de Riesgo",
+    "paperTrading": "Paper Trading",
+    "dcaBot": "DCA Bot",
+    "backtesting": "Backtesting",
+    "news": "Noticias",
+    "settings": "Configuración"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Monitorea el mercado y recibe señales de trading en tiempo real",
+    "marketOpen": "Mercado Abierto",
+    "portfolioValue": "Valor del Portafolio",
+    "activeSignals": "Señales Activas",
+    "monthlyGain": "Ganancia del Mes",
+    "bitcoin": "Bitcoin",
+    "today": "hoy",
+    "newSignals": "nuevas",
+    "noData": "No hay datos",
+    "noHistoricalData": "Sin datos históricos",
+    "vsPrevWeek": "vs {{value}} sem anterior"
+  },
+  "riskManagement": {
+    "title": "Gestión de Riesgo",
+    "subtitle": "Calcula el tamaño óptimo de tus posiciones y gestiona tu riesgo de trading",
+    "accountBalance": "Balance de Cuenta",
+    "tabs": {
+      "positionSizer": "Calculadora de Posición",
+      "kelly": "Criterio de Kelly",
+      "portfolio": "Riesgo de Portafolio"
+    },
+    "positionSizer": {
+      "title": "Parámetros de Operación",
+      "accountBalanceLabel": "Balance de Cuenta (USDT)",
+      "riskPerTrade": "Riesgo por Operación (%)",
+      "entryPrice": "Precio de Entrada",
+      "stopLoss": "Precio de Stop Loss",
+      "takeProfit": "Precio de Take Profit (Opcional)",
+      "leverage": "Apalancamiento (1x = Spot)",
+      "calculate": "Calcular Tamaño de Posición",
+      "results": "Resultados",
+      "unitsToBuy": "Unidades a Comprar/Vender",
+      "enterParameters": "Ingresa tus parámetros de operación y haz clic en calcular",
+      "placeholders": {
+        "entryPrice": "ej: 65000",
+        "stopLoss": "ej: 63000",
+        "takeProfit": "ej: 70000"
+      }
+    },
+    "kelly": {
+      "title": "Calculadora del Criterio de Kelly",
+      "subtitle": "Calcula el tamaño óptimo de apuesta basado en tus estadísticas de trading",
+      "winRate": "Tasa de Éxito (%)",
+      "avgWin": "Ganancia Promedio ($)",
+      "avgLoss": "Pérdida Promedio ($)",
+      "calculate": "Calcular % de Kelly",
+      "results": "Resultados",
+      "placeholders": {
+        "winRate": "ej: 55",
+        "avgWin": "ej: 100",
+        "avgLoss": "ej: 50"
+      }
+    }
+  },
+  "riskWidget": {
+    "title": "Vista de Riesgo",
+    "portfolioRisk": "Riesgo del Portafolio",
+    "openPositions": "Posiciones Abiertas",
+    "maxDrawdown": "Pérdida Máxima",
+    "winRate": "Tasa de Éxito",
+    "riskExposure": "Exposición al Riesgo",
+    "warning": "Tu riesgo de portafolio está elevado. Considera reducir el tamaño de las posiciones o agregar stop losses.",
+    "tools": "Herramientas de Gestión de Riesgo"
+  },
+  "watchlist": {
+    "title": "Lista de Seguimiento",
+    "empty": "No hay criptomonedas en tu lista de seguimiento aún.",
+    "buy": "Compra",
+    "sell": "Venta",
+    "errors": {
+      "loadFailed": "Error al cargar lista de seguimiento",
+      "removeFailed": "Error al eliminar de la lista de seguimiento"
+    },
+    "success": {
+      "removed": "{{symbol}} eliminado de la lista de seguimiento"
+    }
+  },
+  "settings": {
+    "title": "Configuración",
+    "language": {
+      "title": "Idioma / Language",
+      "spanish": "Español",
+      "english": "English",
+      "comingSoon": "Próximamente",
+      "active": "Activo",
+      "description": "Spanish"
+    }
+  }
+}

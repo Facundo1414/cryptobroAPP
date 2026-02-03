@@ -85,7 +85,7 @@ export function RiskWidget() {
           <div className={`w-8 h-8 rounded-lg ${riskColors.bg} flex items-center justify-center`}>
             <Shield className={`w-4 h-4 ${riskColors.text}`} />
           </div>
-          <h3 className="font-semibold text-white">Risk Overview</h3>
+          <h3 className="font-semibold text-white">Vista de Riesgo</h3>
         </div>
         <span className={`text-xs px-2 py-1 rounded-full ${riskColors.bg} ${riskColors.text} font-medium`}>
           {metrics?.riskLevel || 'N/A'}
@@ -97,7 +97,7 @@ export function RiskWidget() {
         <div className="bg-slate-800/50 rounded-lg p-3">
           <div className="flex items-center gap-1 text-slate-400 text-xs mb-1">
             <Activity className="w-3 h-3" />
-            Portfolio Risk
+            Riesgo del Portafolio
           </div>
           <p className={`text-lg font-bold ${riskColors.text}`}>
             {metrics?.portfolioRisk.toFixed(1)}%
@@ -106,7 +106,7 @@ export function RiskWidget() {
         <div className="bg-slate-800/50 rounded-lg p-3">
           <div className="flex items-center gap-1 text-slate-400 text-xs mb-1">
             <Target className="w-3 h-3" />
-            Open Positions
+            Posiciones Abiertas
           </div>
           <p className="text-lg font-bold text-white">
             {metrics?.openPositions}
@@ -115,7 +115,7 @@ export function RiskWidget() {
         <div className="bg-slate-800/50 rounded-lg p-3">
           <div className="flex items-center gap-1 text-slate-400 text-xs mb-1">
             <TrendingDown className="w-3 h-3" />
-            Max Drawdown
+            Pérdida Máxima
           </div>
           <p className="text-lg font-bold text-red-400">
             -{metrics?.maxDrawdown.toFixed(1)}%
@@ -124,7 +124,7 @@ export function RiskWidget() {
         <div className="bg-slate-800/50 rounded-lg p-3">
           <div className="flex items-center gap-1 text-slate-400 text-xs mb-1">
             <TrendingUp className="w-3 h-3" />
-            Win Rate
+            Tasa de Éxito
           </div>
           <p className="text-lg font-bold text-green-400">
             {metrics?.winRate}%
@@ -135,7 +135,7 @@ export function RiskWidget() {
       {/* Risk Bar */}
       <div className="mb-4">
         <div className="flex justify-between text-xs text-slate-400 mb-1">
-          <span>Risk Exposure</span>
+          <span>Exposición al Riesgo</span>
           <span>${metrics?.totalExposure.toLocaleString()}</span>
         </div>
         <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
@@ -152,7 +152,7 @@ export function RiskWidget() {
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-orange-300">
-              Your portfolio risk is elevated. Consider reducing position sizes or adding stop losses.
+              Tu riesgo de portafolio está elevado. Considera reducir el tamaño de las posiciones o agregar stop losses.
             </p>
           </div>
         </div>
@@ -165,7 +165,7 @@ export function RiskWidget() {
                    hover:bg-slate-700/50 rounded-lg transition-colors group"
       >
         <span className="text-sm text-slate-300 group-hover:text-white">
-          Risk Management Tools
+          Herramientas de Gestión de Riesgo
         </span>
         <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-white" />
       </Link>

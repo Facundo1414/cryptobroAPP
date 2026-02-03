@@ -271,6 +271,14 @@ model Alert {
 // BACKTESTING
 // ============================================
 
+enum BacktestStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
 model Backtest {
   id              String        @id @default(uuid())
   userId          String        @map("user_id")
@@ -303,7 +311,7 @@ model Backtest {
   equityCurve     Json?         @map("equity_curve")
   
   // Status
-  status          String        @default("pending") // pending, running, completed, failed
+  status          BacktestStatus @default(PENDING)
   
   createdAt       DateTime      @default(now()) @map("created_at")
   completedAt     DateTime?     @map("completed_at")

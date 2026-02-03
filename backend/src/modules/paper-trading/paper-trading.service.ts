@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "../../prisma/prisma.service";
+import { PrismaService } from "@/common/prisma/prisma.service";
 import { CreatePortfolioDto, OpenTradeDto } from "./dto";
 import { MarketDataService } from "../market-data/market-data.service";
 
@@ -70,14 +70,59 @@ export class PaperTradingService {
 
     const totalEquity = portfolio.currentBalance + unrealizedPnl;
 
+    // Calculate P&L for different time periods
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Get closed trades for each period
+    const [dailyTrades, weeklyTrades, monthlyTrades] = await Promise.all([
+      this.prisma.paperTrade.findMany({
+        where: {
+          portfolioId: portfolio.id,
+          status: "CLOSED",
+          closedAt: { gte: oneDayAgo },
+        },
+      }),
+      this.prisma.paperTrade.findMany({
+        where: {
+          portfolioId: portfolio.id,
+          status: "CLOSED",
+          closedAt: { gte: oneWeekAgo },
+        },
+      }),
+      this.prisma.paperTrade.findMany({
+        where: {
+          portfolioId: portfolio.id,
+          status: "CLOSED",
+          closedAt: { gte: oneMonthAgo },
+        },
+      }),
+    ]);
+
+    // Calculate P&L for each period
+    const calculatePnl = (trades: any[]) => {
+      return trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+    };
+
+    const dailyPnlAmount = calculatePnl(dailyTrades);
+    const weeklyPnlAmount = calculatePnl(weeklyTrades);
+    const monthlyPnlAmount = calculatePnl(monthlyTrades);
+
+    // Calculate percentage based on initial balance
+    const dailyPnl = (dailyPnlAmount / portfolio.initialBalance) * 100;
+    const weeklyPnl = (weeklyPnlAmount / portfolio.initialBalance) * 100;
+    const monthlyPnl = (monthlyPnlAmount / portfolio.initialBalance) * 100;
+
     return {
       ...portfolio,
       totalEquity,
       openPositions: openTrades.length,
       unrealizedPnl,
-      dailyPnl: 0, // TODO: Calculate from trades
-      weeklyPnl: 0,
-      monthlyPnl: 0,
+      dailyPnl: parseFloat(dailyPnl.toFixed(2)),
+      weeklyPnl: parseFloat(weeklyPnl.toFixed(2)),
+      monthlyPnl: parseFloat(monthlyPnl.toFixed(2)),
     };
   }
 
@@ -204,12 +249,21 @@ export class PaperTradingService {
     const newBalance =
       portfolio.currentBalance + trade.entryPrice * trade.quantity + pnl;
 
+    // Calculate peak balance and drawdown
+    const newPeakBalance = Math.max(portfolio.peakBalance, newBalance);
+    const drawdown =
+      newPeakBalance > 0
+        ? ((newPeakBalance - newBalance) / newPeakBalance) * 100
+        : 0;
+
     // Update portfolio stats
     const isWinning = pnl > 0;
     await this.prisma.paperPortfolio.update({
       where: { id: portfolio.id },
       data: {
         currentBalance: newBalance,
+        peakBalance: newPeakBalance,
+        maxDrawdown: Math.max(portfolio.maxDrawdown, drawdown),
         totalPnl: portfolio.totalPnl + pnl,
         totalPnlPercent:
           ((portfolio.initialBalance +

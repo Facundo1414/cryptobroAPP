@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "../../prisma/prisma.service";
+import { PrismaService } from "@/common/prisma/prisma.service";
 import { CreateDCABotDto, PreviewDCABotDto } from "./dto";
 import { MarketDataService } from "../market-data/market-data.service";
 
@@ -148,6 +148,7 @@ export class DCABotService {
           isActive: false,
           totalProfit: bot.totalProfit + profit,
           totalCycles: bot.totalCycles + 1,
+          currentCycle: bot.currentCycle + 1,
           totalInvested: 0,
           averagePrice: null,
           currentQuantity: 0,
